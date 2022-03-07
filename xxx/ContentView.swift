@@ -44,7 +44,7 @@ struct ColorfulButtonStyle: ButtonStyle {
             .background(
                 ColorfulBackground(isHighlighted: configuration.isPressed, shape: Circle())
             )
-//            .animation(nil)
+        //            .animation(nil)
     }
 }
 
@@ -56,7 +56,7 @@ struct ColorfulButtonStyleRoundedRectangle: ButtonStyle {
             .background(
                 ColorfulBackground(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
             )
-//            .animation(nil)
+        //            .animation(nil)
     }
 }
 
@@ -78,7 +78,7 @@ struct ColorfulToggleStyle: ToggleStyle {
 struct ColorfulBackground<S: Shape>: View {
     var isHighlighted: Bool
     var shape: S
-
+    
     var body: some View {
         ZStack {
             if isHighlighted {
@@ -87,7 +87,7 @@ struct ColorfulBackground<S: Shape>: View {
                     .overlay(shape.stroke(LinearGradient(Color.lightStart, Color.lightEnd), lineWidth: 4))
                     .shadow(color: Color.darkStart, radius: 10, x: 5, y: 5)
                     .shadow(color: Color.darkEnd, radius: 10, x: -5, y: -5)
-
+                
             } else {
                 shape
                     .fill(LinearGradient(Color.darkStart, Color.darkEnd))
@@ -106,21 +106,21 @@ struct ColorfulButtonStyleWithoutShadows: ButtonStyle {
             .background(
                 ColorfulBackgroundWithoutShadows(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
             )
-//            .animation(nil)
+        //            .animation(nil)
     }
 }
 
 struct ColorfulBackgroundWithoutShadows<S: Shape>: View {
     var isHighlighted: Bool
     var shape: S
-
+    
     var body: some View {
         ZStack {
             if isHighlighted {
                 shape
                     .fill(LinearGradient(Color.lightEnd, Color.lightStart))
                     .overlay(shape.stroke(LinearGradient(Color.lightStart, Color.lightEnd), lineWidth: 4))
-
+                
             } else {
                 shape
                     .fill(LinearGradient(Color.darkStart, Color.darkEnd))
@@ -370,18 +370,6 @@ struct mapContents: Hashable {
     var blur: Bool = false
 }
 
-//struct VisualEffectView: UIViewRepresentable {
-//    var effect: UIVisualEffect = UIBlurEffect(style: .systemThinMaterial)
-//    func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
-//    func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
-//}
-//
-//struct VisualEffectView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        VisualEffectView()
-//    }
-//}
-
 struct ContentView: View {
     @State var maps: Dictionary<Int, mapContents> = Dictionary()
     @StateObject var viewRouter: ViewRouter
@@ -569,8 +557,10 @@ struct tabBarIcons: View {
     
     var body: some View {
         if showTabBar.contains(viewRouter.currentPage) {
-            VStack{
+            VStack {
+                
                 Spacer()
+                
                 ZStack {
                     Rectangle() // UIColor.systemBackground
                         .fill(
@@ -664,62 +654,62 @@ struct entryField: View {
     @Binding var errorInput: String
     
     var body: some View {
-//        VStack {
-//            HStack {
-//                Text("Начальный кабинет")
-//                    .foregroundColor(Color.white)
-//                    .font(.system(size: UIScreen.main.bounds.width / 20))
-//                    .fontWeight(.bold)
-//
-//                Text("Конечный кабинет")
-//            }
+        //        VStack {
+        //            HStack {
+        //                Text("Начальный кабинет")
+        //                    .foregroundColor(Color.white)
+        //                    .font(.system(size: UIScreen.main.bounds.width / 20))
+        //                    .fontWeight(.bold)
+        //
+        //                Text("Конечный кабинет")
+        //            }
+        
+        VStack {
+            Spacer()
             
-            VStack {
-                Spacer()
-                
-                TextField("", text: $sourse)
-                    .modifier(
-                        PlaceholderStyle(
-                            showPlaceHolder: sourse.isEmpty,
-                            placeholder: "Начальный кабинет",
-                            center: false
-                        )
+            TextField("", text: $sourse)
+                .modifier(
+                    PlaceholderStyle(
+                        showPlaceHolder: sourse.isEmpty,
+                        placeholder: "Начальный кабинет",
+                        center: false
                     )
-                    .onChange(of: sourse) { newValue in
-                        errorInput = ""
-                    }
-                    .cornerRadius(10)
-                    .frame(height: 50, alignment: .leading)
-                    .multilineTextAlignment(.leading)
-                
-                Spacer()
-                
-                Image(systemName: "arrow.down")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .foregroundColor(Color.offWhite)
-                    .frame(width: UIScreen.main.bounds.width*0.9/15, height: UIScreen.main.bounds.height / 4.5 / 10)
-                
-                Spacer()
-                
-                TextField("", text: $destination)
-                    .modifier(
-                        PlaceholderStyle(
-                            showPlaceHolder: destination.isEmpty,
-                            placeholder: "Конечный кабинет",
-                            center: false
-                        )
+                )
+                .onChange(of: sourse) { newValue in
+                    errorInput = ""
+                }
+                .cornerRadius(10)
+                .frame(height: 50, alignment: .leading)
+                .multilineTextAlignment(.leading)
+            
+            Spacer()
+            
+            Image(systemName: "arrow.down")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .foregroundColor(Color.offWhite)
+                .frame(width: UIScreen.main.bounds.width*0.9/15, height: UIScreen.main.bounds.height / 4.5 / 10)
+            
+            Spacer()
+            
+            TextField("", text: $destination)
+                .modifier(
+                    PlaceholderStyle(
+                        showPlaceHolder: destination.isEmpty,
+                        placeholder: "Конечный кабинет",
+                        center: false
                     )
-                    .onChange(of: destination) { newValue in
-                        errorInput = ""
-                    }
-                    .cornerRadius(10)
-                    .frame(height: 50, alignment: .leading)
-                    .multilineTextAlignment(.leading)
-                
-                Spacer()
-            }
-//        }
+                )
+                .onChange(of: destination) { newValue in
+                    errorInput = ""
+                }
+                .cornerRadius(10)
+                .frame(height: 50, alignment: .leading)
+                .multilineTextAlignment(.leading)
+            
+            Spacer()
+        }
+        //        }
     }
 }
 
@@ -775,15 +765,13 @@ struct Advert: View {
 }
 
 struct Tittle: View {
-    @Binding var offsetValue: CGSize
+    var text: String
     
     var body: some View {
-        Text("Навигация")
+        Text(text)
             .foregroundColor(.offWhite)
             .font(.system(size: UIScreen.main.bounds.height / 30))
             .fontWeight(.bold)
-            .scaleEffect(offsetValue == CGSize.zero ? 1 : offsetValue.height > 0 ? 1 + abs(offsetValue.height) / 140 : 1)
-            .offset(y: offsetValue == CGSize.zero ? 0 : offsetValue.height < 0 ? 0 : abs(offsetValue.height/2))
             .animation(.spring())
     }
 }
@@ -846,7 +834,7 @@ struct Wall: View {
                 
             case .properties:
                 Color.clear
-                    
+                
             case .maps:
                 Color.clear
             }
@@ -857,13 +845,21 @@ struct Wall: View {
 
 struct Section1: View {
     @State var username: String = ""
-    @State var isPrivate: Bool = true
+    @State var password: String = ""
+    @State var isPrivate: Bool = false
     
     var body: some View {
         Section(header: Text("PROFILE")) {
-            TextField("Username", text: $username)
+            TextField("Логин", text: $username)
+                .blur(radius: isPrivate ? 15 : 0)
+                .disabled(isPrivate)
+            
+            TextField("Пароль", text: $password)
+                .blur(radius: isPrivate ? 15 : 0)
+                .disabled(isPrivate)
+            
             Toggle(isOn: $isPrivate) {
-                Text("Private Account")
+                Text("Скрыть данные")
             }
         }
         .listRowBackground(Color.gray.opacity(0.5))
@@ -871,19 +867,31 @@ struct Section1: View {
 }
 
 struct Section2: View {
-    @State var notificationsEnabled: Bool = false
-    @State private var previewIndex = 0
-    var previewOptions = ["Always", "When Unlocked", "Never"]
+    @State private var previewIndexU = 0
+    @State private var previewIndexF = 0
+    @State private var selectedOptionIndex = 0
+    var name = [" ", "МГИМО", "МГУ", "НИЯУ МИФИ"]
+    var fac = [" ", "1", "2", "3"]
     
     var body: some View {
-        Section(header: Text("NOTIFICATIONS")) {
-            Toggle(isOn: $notificationsEnabled) {
-                Text("Enabled")
-            }
-            Picker(selection: $previewIndex, label: Text("Show Previews")) {
-                ForEach(0 ..< previewOptions.count) {
-                    Text(self.previewOptions[$0])
+        Section(header: Text("Университет")) {
+            Picker(selection: $previewIndexU, label: Text("Название")) {
+                ForEach(0 ..< name.count) {
+                    Text(self.name[$0])
                 }
+            }
+            
+            Picker(selection: $previewIndexF, label: Text("Факультет")) {
+                ForEach(0 ..< fac.count) { index in
+                    Text(self.fac[index])
+                        .tag(index)
+                }
+            }
+            
+            HStack {
+                Text("Адрес")
+                Spacer()
+                Text("г. Москва, ул. Улица, д. 16/7")
             }
         }
         .listRowBackground(Color.gray.opacity(0.5))
@@ -892,14 +900,36 @@ struct Section2: View {
 
 struct Section3: View {
     var body: some View {
-        Section(header: Text("ABOUT")) {
+        Section(header: Text("О приложении")) {
             HStack {
-                Text("Version")
+                Text("Версия")
                 Spacer()
                 Text("2.2.1")
             }
         }
-        .listRowBackground(Color.gray.opacity(0.5))
+    }
+}
+
+struct Section5: View {
+    @State private var previewIndexT = 0
+    @State private var previewIndexL = 0
+    var theme = ["Тёмная", "Светлая"]
+    var language = ["Русский", "English"]
+    
+    var body: some View {
+        Section(header: Text("Интерфейс")) {
+            Picker(selection: $previewIndexT, label: Text("Тема")) {
+                ForEach(0 ..< theme.count) {
+                    Text(self.theme[$0])
+                }
+            }
+            
+            Picker(selection: $previewIndexL, label: Text("Язык")) {
+                ForEach(0 ..< language.count) {
+                    Text(self.language[$0])
+                }
+            }
+        }
     }
 }
 
@@ -909,8 +939,8 @@ struct Section4: View {
             Button(action: {
                 print("Perform an action here...")
             }) {
-                Text("Reset All Settings")
-                    .foregroundColor(Color.green)
+                Text("Сбросить все настройки")
+                    .foregroundColor(Color.lightStart)
             }
         }
         .listRowBackground(Color.gray.opacity(0.5))
@@ -918,33 +948,77 @@ struct Section4: View {
 }
 
 struct Properties: View {
+    @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
+    @State var show = false
+    
     var body: some View {
-        VStack {
+        ZStack(alignment: .top) {
             Form {
-                Section1()
+                GeometryReader { g in
+                    Tittle(text: "Настройки")
+                        .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
+                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
+                        .frame(width: g.size.width)
+                        .onReceive(self.time) { (_) in
+                            
+                            let y = g.frame(in: .global).minY
+                            
+                            if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
+                                
+                                withAnimation{
+                                    
+                                    self.show = true
+                                }
+                            } else {
+                                
+                          
+                                    
+                                    self.show = false
+                                
+                            }
+                            
+                        }
+                        .padding(.top, UIScreen.main.bounds.height*0.05)
+                }
+                
+                .listRowBackground(Color.clear)
+                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
+                
+                
                 Section2()
+                Section1()
+                Section5()
                 Section3()
                 Section4()
+                
+                Spacer()
+                    .frame(height: UIScreen.main.bounds.height/4)
+                    .listRowBackground(Color.clear)
             }
             .onAppear{
                 UITableView.appearance().backgroundColor = .clear
+                UITableView.appearance().showsVerticalScrollIndicator = false
             }
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                .background(
-                    ZStack {
-                        LinearGradient(Color.darkEnd, Color.darkStart)
-                        
-                        Image(systemName: "gearshape")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .foregroundColor(.darkEnd)
-                            .opacity(0.8)
-                            .padding()
-                    }
-                )
-            .padding(.top, 15)
+            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+            .background(
+                ZStack {
+                    LinearGradient(Color.darkEnd, Color.darkStart)
+                    
+                    Image(systemName: "gearshape")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundColor(.darkEnd)
+                        .opacity(0.8)
+                        .padding()
+                }
+            )
+            
+            if self.show {
+                header(text: "Настройки")
+            }
         }
-        .ignoresSafeArea(.all)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .ignoresSafeArea(.all)
     }
 }
 
@@ -992,169 +1066,185 @@ struct Navigation: View {
     @State var scrollContentOffset: CGFloat = CGFloat.zero
     @State var scrollContentOffsetSum: CGFloat = CGFloat(110)
     
-    
-//        .frame(width: UIScreen.main.bounds.width, height: g.frame(in: .global).minY > 0 ? g.size.height + g.frame(in: .global).minY : g.size.height)
+    @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
+    @State var show = false
     
     var body: some View {
-            VStack {
-                    GeometryReader { geo in
-                        ScrollView(.vertical, showsIndicators: false) { // Для анимации []
-//                            Spacer()
-                            GeometryReader { g in
-                                Tittle(offsetValue: $offsetValue)
-//                                    .frame(width: g.size.width, height: g.size.width)
-//                                    .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/3 : 0)
-//                                    .scaleEffect(g.frame(in: .global).minY > 1 ? g.size.height/15 + g.frame(in: .global).minY/15 : 1)
-                                    .frame(width: g.size.width)
-                                    .padding(.top, UIScreen.main.bounds.height*0.05)
-                            }
-                            .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
-
-                          
+        ZStack(alignment: .top) {
+            ScrollView(.vertical, showsIndicators: false) { // Для анимации []
+                GeometryReader { g in
+                    Tittle(text: "Навигация")
+                        .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
+                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
+                        .frame(width: g.size.width)
+                        .onReceive(self.time) { (_) in
+ 
+                            let y = g.frame(in: .global).minY
                             
+                            if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
+                                
+                                withAnimation{
+                                    
+                                    self.show = true
+                                }
+                            } else {
+                                
+                                
+                                self.show = false
+                                
+                            }
                             
-                                VStack {
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                        .frame(width: UIScreen.main.bounds.width*0.9, height: UIScreen.main.bounds.height / 4.5)
-                                        .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                        .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                        .overlay(
-                                                HStack {
-                                                    Spacer()
-                                                    
-                                                        entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput)
-                                                        
-                                                    Spacer()
-                                                    
-                                                    Button(action: {
-                                                        makeRoute()
-                                                    }) {
-                                                            
-                                                        Image("search_white")
-                                                            .resizable()
-                                                            .aspectRatio(contentMode: .fit)
-                                                            .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
-                                                            .padding(.horizontal, 30)
-                                                                
-                                                    }
-                                                        .buttonStyle(ColorfulButtonStyleWithoutShadows())
-                                                         
-                                                }
-                                        )
-                                    
-                                    inputError(errorInput: $errorInput)
-                                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
-                                    
-                                    Text("Быстрый поиск")
-                                        .foregroundColor(.offWhite)
-                                        .font(.system(size: UIScreen.main.bounds.height / 30))
-                                        .fontWeight(.bold)
-                                    
-                                    GeometryReader { proxy in
-                                        ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack(spacing: 10) {
-                                                Spacer()
-                                                RoundedRectangle(cornerRadius: 25)
-                                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                                    .padding(.vertical, 30)
-                                                
-                                                RoundedRectangle(cornerRadius: 25)
-                                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                                    .padding(.vertical, 30)
-                                                
-                                                RoundedRectangle(cornerRadius: 25)
-                                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                                    .padding(.vertical, 30)
-                                                
-                                                RoundedRectangle(cornerRadius: 25)
-                                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                                    .padding(.vertical, 30)
-                                            }
-                                        }
-                                    }
-                                    .frame(width: .infinity, height: UIScreen.main.bounds.height / 4.5)
-                                    .padding(.bottom, 50)
-                                    
-                                    VStack(spacing: 20) {
-                                        Text("Избранные маршруты")
-                                            .foregroundColor(.offWhite)
-                                            .font(.system(size: UIScreen.main.bounds.height / 30))
-                                            .fontWeight(.bold)
-                                        
-                                        
-                                        
-                                        Button(action: {}) {
-                                            Text("2068 -> 2069")
-                                                .foregroundColor(.offWhite)
-                                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                                .fontWeight(.semibold)
-                                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
-                                        }
-                                            .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                                        
-                                        Button(action: {}) {
-                                            Text("2068 -> 2069")
-                                                .foregroundColor(.offWhite)
-                                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                                .fontWeight(.semibold)
-                                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
-                                        }
-                                            .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                                        
-                                        Button(action: {}) {
-                                            Text("2068 -> 2069")
-                                                .foregroundColor(.offWhite)
-                                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                                .fontWeight(.semibold)
-                                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
-                                        }
-                                            .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                                        
-                                        Button(action: {}) {
-                                            Text("2068 -> 2069")
-                                                .foregroundColor(.offWhite)
-                                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                                .fontWeight(.semibold)
-                                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
-                                        }
-                                            .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                                        
-                                        
-                                        
-    //                                    selectedRoutes(route: ["2068", "2115"])
-    //                                    selectedRoutes(route: ["2068", "2115"])
-                                    }
-                                    Spacer()
-                               
-                                Advert()
-
-                                Advert()
-                                    
-                                Spacer()
-                                    .frame(height: UIScreen.main.bounds.height/4)
-                            }
-                                .frame(minHeight: geo.size.height)
-                                .padding(.top, 15)
-                            }
                         }
-                            .edgesIgnoringSafeArea(.top)
-                            .edgesIgnoringSafeArea(.bottom)
+                        .padding(.top, UIScreen.main.bounds.height*0.05)
+                }
+                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
+                
+                VStack {
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                        .frame(width: UIScreen.main.bounds.width*0.9, height: UIScreen.main.bounds.height / 4.5)
+                        .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
+                        .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                        .overlay(
+                            HStack {
+                                Spacer()
+                                
+                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    makeRoute()
+                                }) {
+                                    
+                                    Image("search_white")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                        .padding(.horizontal, 30)
+                                    
+                                }
+                                .buttonStyle(ColorfulButtonStyleWithoutShadows())
+                                
+                            }
+                        )
+                    
+                    inputError(errorInput: $errorInput)
+                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
+                    
+                    Text("Быстрый поиск")
+                        .foregroundColor(.offWhite)
+                        .font(.system(size: UIScreen.main.bounds.height / 30))
+                        .fontWeight(.bold)
+                    
+                    GeometryReader { proxy in
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                Spacer()
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
+                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
+                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                                    .padding(.vertical, 30)
+                                
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
+                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
+                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                                    .padding(.vertical, 30)
+                                
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
+                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
+                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                                    .padding(.vertical, 30)
+                                
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
+                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
+                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                                    .padding(.vertical, 30)
+                            }
+                            .padding(.trailing, 15)
+                        }
+                    }
+                    .frame(height: UIScreen.main.bounds.height / 4.5)
+                    .padding(.bottom, 50)
+                    
+                    VStack(spacing: 20) {
+                        Text("Избранные маршруты")
+                            .foregroundColor(.offWhite)
+                            .font(.system(size: UIScreen.main.bounds.height / 30))
+                            .fontWeight(.bold)
+                        
+                        
+                        
+                        Button(action: {}) {
+                            Text("2068 -> 2069")
+                                .foregroundColor(.offWhite)
+                                .font(.system(size: UIScreen.main.bounds.height / 40))
+                                .fontWeight(.semibold)
+                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                        }
+                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
+                        
+                        Button(action: {}) {
+                            Text("2068 -> 2069")
+                                .foregroundColor(.offWhite)
+                                .font(.system(size: UIScreen.main.bounds.height / 40))
+                                .fontWeight(.semibold)
+                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                        }
+                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
+                        
+                        Button(action: {}) {
+                            Text("2068 -> 2069")
+                                .foregroundColor(.offWhite)
+                                .font(.system(size: UIScreen.main.bounds.height / 40))
+                                .fontWeight(.semibold)
+                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                        }
+                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
+                        
+                        Button(action: {}) {
+                            Text("2068 -> 2069")
+                                .foregroundColor(.offWhite)
+                                .font(.system(size: UIScreen.main.bounds.height / 40))
+                                .fontWeight(.semibold)
+                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                        }
+                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
+                        
+                        
+                        
+                        //                                    selectedRoutes(route: ["2068", "2115"])
+                        //                                    selectedRoutes(route: ["2068", "2115"])
+                    }
+                    Spacer()
+                    
+                    Advert()
+                    
+                    Advert()
+                    
+                    Spacer()
+                        .frame(height: UIScreen.main.bounds.height/4)
+                }
+                .padding(.top, 15)
             }
-            .onAppear(perform: {
-                start()
+            
+            if self.show{
+                header(text: "Навигация")
+            }
+            
+        }
+        .edgesIgnoringSafeArea(.top)
+        .edgesIgnoringSafeArea(.bottom)
+        .onAppear(perform: {
+            start()
         })
     }
     
@@ -1352,78 +1442,70 @@ struct Navigation: View {
 struct dataList: View {
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
     @State var show = false
-
+    
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 GeometryReader { g in
-                    Text("Xnj-nj")
+                    Tittle(text: "Расписание")
+                        .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
+                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
                         .frame(width: g.size.width)
+                    
                         .onReceive(self.time) { (_) in
-                        
-                            // its not a timer...
-                            // for tracking the image is scrolled out or not...
                             
                             let y = g.frame(in: .global).minY
                             
-                            if -y > (UIScreen.main.bounds.height * 0.1) {
+                            if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
                                 
                                 withAnimation{
                                     
                                     self.show = true
                                 }
-                            }
-                            else{
+                            } else {
                                 
-                                withAnimation{
-                                    
-                                    self.show = false
-                                }
+                                
+                                self.show = false
+                                
                             }
                             
                         }
+                        .padding(.top, UIScreen.main.bounds.height*0.05)
                 }
                 .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
                 
-                Spacer()
-                
-                VStack {
-                    Text("qweqwe")
-                    VStack {
-                        Spacer().frame(minHeight: UIScreen.main.bounds.height)
-                        
-                        
-                    }
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                    Text("qweqwe")
-                }
+                Rectangle()
+                    .fill(Color.darkStart)
+                    .frame(height: 500)
+                    .opacity(0.5)
+                    .padding()
             }
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
             
             if self.show{
-                
-                header()
+                header(text: "Расписание")
             }
         }
+            .ignoresSafeArea(.all)
     }
 }
 
 struct header: View {
+    var text: String
+    
     var body: some View {
-        HStack(alignment: .top){
         VStack {
-            Text("1234")
+            Text(text)
+                .foregroundColor(.offWhite)
+                .font(.system(size: UIScreen.main.bounds.height / 30))
+                .fontWeight(.bold)
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
+                .padding(.top, 15)
+                .background(BlurBG())
+                .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
+                .edgesIgnoringSafeArea(.top)
+            
             Spacer()
-
-        }
-        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
-        .background(BlurBG())
-        .edgesIgnoringSafeArea(.top)
         }
     }
 }
@@ -1434,13 +1516,12 @@ struct BlurBG : UIViewRepresentable {
         
         // for dark mode adoption...
         
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
         
         return view
     }
     
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        
         
     }
 }
