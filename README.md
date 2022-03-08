@@ -14,3 +14,7 @@
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .pinchToZoom()
+                                            
+>>>>>>>>>>>
+
+Исправить поднятие снизу контента при появлении клавиатуры в Properties

@@ -39,12 +39,11 @@ extension LinearGradient {
 struct ColorfulButtonStyle: ButtonStyle {
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
-            .padding(30)
+            .padding(15)
             .contentShape(Circle())
             .background(
                 ColorfulBackground(isHighlighted: configuration.isPressed, shape: Circle())
             )
-        //            .animation(nil)
     }
 }
 
@@ -66,7 +65,7 @@ struct ColorfulToggleStyle: ToggleStyle {
             configuration.isOn.toggle()
         }) {
             configuration.label
-                .padding(30)
+                .padding(15)
                 .contentShape(Circle())
         }
         .background(
@@ -92,8 +91,8 @@ struct ColorfulBackground<S: Shape>: View {
                 shape
                     .fill(LinearGradient(Color.darkStart, Color.darkEnd))
                     .overlay(shape.stroke(LinearGradient(Color.lightStart, Color.lightEnd), lineWidth: 4))
-                    .shadow(color: Color.darkStart, radius: 10, x: -10, y: -10)
-                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                    .shadow(color: Color.darkStart, radius: 10, x: -5, y: -5)
+                    .shadow(color: Color.darkEnd, radius: 10, x: 5, y: 5)
             }
         }
     }
@@ -330,6 +329,7 @@ enum Page {
     case navigation
     case datalist
     case properties
+    case news
     case maps
 }
 
@@ -344,7 +344,8 @@ public struct PlaceholderStyle: ViewModifier {
     
     public func body(content: Content) -> some View {
         ZStack(alignment: center ? .center: .leading) {
-            Color(.white)
+            Color.offWhite
+            
             if showPlaceHolder {
                 HStack {
                     Spacer()
@@ -356,7 +357,7 @@ public struct PlaceholderStyle: ViewModifier {
                 }
             }
             content
-                .foregroundColor(Color(#colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)))
+                .foregroundColor(Color.darkStart)
                 .padding(.horizontal, 20)
         }
     }
@@ -378,24 +379,28 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             switch viewRouter.currentPage {
-                
+
             case .navigation:
                 Wall(page: .navigation)
                 Navigation(geometry: geometry, maps: $maps, viewRouter: viewRouter)
-                
+
             case .datalist:
                 Wall(page: .datalist)
                 dataList()
-                
+
             case .properties:
                 Wall(page: .properties)
                 Properties()
-                
+
             case .maps:
                 Wall(page: .maps)
                 navigationPage(maps: $maps, viewRouter: viewRouter)
+                
+            case .news:
+                Wall(page: .news)
+                news()
             }
-            
+
             tabBarIcons(geometry: geometry, viewRouter: viewRouter)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -405,6 +410,12 @@ struct ContentView: View {
     func rotate() -> Void {
         let value = UIInterfaceOrientation.landscapeRight.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")
+    }
+}
+
+struct news: View {
+    var body: some View {
+        Color.clear
     }
 }
 
@@ -466,54 +477,103 @@ struct navigationPage: View {
     @State var image: UIImage = UIImage()
     @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
+    @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
+    @State var show = false
+    @State var bookmark: Bool = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color.black.edgesIgnoringSafeArea(.bottom)
-                ScrollView(.vertical) {
-                    ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                        Map(number: map, image: maps[map]!.image, text: maps[map]!.text)
-                            .onTapGesture(count: 1) {
-                                zIndexValue = true
-                                image = maps[map]!.image
-                                blurMap = true
+        GeometryReader { g in
+            ZStack(alignment: .top) {
+                ZStack {
+                        ScrollView(.vertical) {
+                            Spacer()
+                                .frame(height: UIScreen.main.bounds.height*0.08)
+                            
+                            ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
+                                GeometryReader { gg in
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 25)
+                                            .fill(LinearGradient(Color.darkStart, Color.darkEnd))
+                                            .shadow(color: Color.darkEnd, radius: 5, x: 5, y: 5)
+                                            
+                                            Map(number: map, image: maps[map]!.image, text: maps[map]!.text, geometry: gg)
+                                                .onTapGesture(count: 1) {
+                                                    zIndexValue = true
+                                                    image = maps[map]!.image
+                                                    blurMap = true
+                                                }
+                                    }
+                                }
+                                .frame(width: g.size.width, height: g.size.height * 0.35, alignment: .center)
+                                Spacer()
+                                    .frame(height: g.size.height*0.09)
                             }
+                        }
+                            .disabled(zIndexValue)
+                            .blur(radius: blurMap ? 15 : 0)
+                            .zIndex(zIndexValue ? 0 : 1)
+                        
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.25, alignment: .center)
+                            .pinchToZoom()
+                            .zIndex(zIndexValue ? 1 : 0)
                     }
-                    .navigationBarTitle(Text("Маршрут"), displayMode: .inline) // Сделать Заголовок неподвижным, если свайп вниз
-                    // Задать цает заголовку navigationBarTitle
-                }
-                .disabled(zIndexValue)
-                .navigationBarItems(leading: // ToolBarItem использовать для кнопок (Выйти, сохранить маршрут)
-                                    Button(action: {
-                    clearSVG()
-                    maps.removeAll()
-                    zIndexValue = false
-                    image = UIImage()
-                    blurMap = false
-                    viewRouter.currentPage = .navigation
-                }) {
-                    Text("Back")
-                }
-                )
-                .blur(radius: blurMap ? 15 : 0)
-                .zIndex(zIndexValue ? 0 : 1)
+                        .onTapGesture(count: 1) {
+                            zIndexValue = false
+                            image = UIImage()
+                            blurMap = false
+                        }
+                        .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
+                        .edgesIgnoringSafeArea(.bottom)
                 
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.25, alignment: .center)
-                    .zIndex(zIndexValue ? 1 : 0)
-                    .pinchToZoom()
+                ZStack(alignment: .top) {
+                    header(text: "Маршрут")
+                    VStack {
+                        HStack {
+                                Button(action: {
+                                    clearSVG()
+                                    maps.removeAll()
+                                    zIndexValue = false
+                                    image = UIImage()
+                                    blurMap = false
+                                    bookmark = false
+                                    viewRouter.currentPage = .navigation
+                                }) {
+                                        Image(systemName: "arrow.uturn.backward")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .foregroundColor(.offWhite)
+                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                }
+                                    .frame(width: 50, height: 50)
+                                    .buttonStyle(ColorfulButtonStyle())
+
+                                Spacer()
+                            
+                                Toggle(isOn: $bookmark) {
+                                    Image(systemName: self.bookmark ? "bookmark.fill" : "bookmark")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                        .foregroundColor(Color.offWhite)
+                                }
+                                .frame(width: 50, height: 50)
+                                .toggleStyle(ColorfulToggleStyle())
+                            }
+//                        .ignoresSafeArea(edges: .top)
+                                .padding(.horizontal, 30)
+                                .padding(.top, -10)
+                        
+                        Spacer()
+                }
+                          
+                }
             }
-            .onTapGesture(count: 1) {
-                zIndexValue = false
-                image = UIImage()
-                blurMap = false
-            }
+            .frame(width: g.size.width, height: g.size.height)
         }
-        .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
-        .edgesIgnoringSafeArea(.bottom)
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
     
     func clearSVG () {
@@ -534,26 +594,27 @@ struct Map: View {
     var number: Int
     var image: UIImage
     var text: String
+    var geometry: GeometryProxy
     
     var body: some View {
         VStack {
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.25, alignment: .center)
-                .pinchToZoom()
+                .frame(width: geometry.size.width, height: geometry.size.height * 0.9, alignment: .center)
             
             Text(text)
                 .foregroundColor(Color.white)
+                .frame(height: UIScreen.main.bounds.height * 0.1)
         }
-        .padding()
+        .padding(.vertical, 5)
     }
 }
 
 struct tabBarIcons: View {
     var geometry: GeometryProxy
     @StateObject var viewRouter: ViewRouter
-    var showTabBar: [Page] = [.navigation, .datalist, .properties]
+    var showTabBar: [Page] = [.navigation, .datalist, .properties, .news]
     
     var body: some View {
         if showTabBar.contains(viewRouter.currentPage) {
@@ -581,6 +642,11 @@ struct tabBarIcons: View {
                         TabBarIconNew(viewRouter: viewRouter, assignedPage: .datalist, width: geometry.size.width, height: geometry.size.height, systemIconName: "list.bullet", tabName: "Расписание")
                             .padding(.top, geometry.size.height/16/8)
                         
+                        
+                        Spacer()
+                        
+                        TabBarIconNew(viewRouter: viewRouter, assignedPage: .news, width: geometry.size.width, height: geometry.size.height, systemIconName: "newspaper", tabName: "Новости")
+                            .padding(.top, geometry.size.height/16/8)
                         
                         Spacer()
                         
@@ -648,22 +714,20 @@ struct RoundedCorner: Shape {
     }
 }
 
+enum errorSignal {
+    case start
+    case end
+    case all
+    case nothing
+}
+
 struct entryField: View {
     @Binding var sourse: String
     @Binding var destination: String
     @Binding var errorInput: String
+    @Binding var errorType: errorSignal
     
     var body: some View {
-        //        VStack {
-        //            HStack {
-        //                Text("Начальный кабинет")
-        //                    .foregroundColor(Color.white)
-        //                    .font(.system(size: UIScreen.main.bounds.width / 20))
-        //                    .fontWeight(.bold)
-        //
-        //                Text("Конечный кабинет")
-        //            }
-        
         VStack {
             Spacer()
             
@@ -677,14 +741,22 @@ struct entryField: View {
                 )
                 .onChange(of: sourse) { newValue in
                     errorInput = ""
+                    
+                    if errorType == .all {
+                        errorType = .end
+                    } else if errorType == .start {
+                        errorType = .nothing
+                    }
                 }
+                .textContentType(.dateTime)
                 .cornerRadius(10)
                 .frame(height: 50, alignment: .leading)
                 .multilineTextAlignment(.leading)
+                .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .start || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
             Spacer()
             
-            Image(systemName: "arrow.down")
+            Image(systemName: "chevron.down")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .foregroundColor(Color.offWhite)
@@ -702,14 +774,20 @@ struct entryField: View {
                 )
                 .onChange(of: destination) { newValue in
                     errorInput = ""
+                    
+                    if errorType == .all {
+                        errorType = .start
+                    } else if errorType == .end {
+                        errorType = .nothing
+                    }
                 }
                 .cornerRadius(10)
                 .frame(height: 50, alignment: .leading)
                 .multilineTextAlignment(.leading)
+                .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .end || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
             Spacer()
         }
-        //        }
     }
 }
 
@@ -766,13 +844,24 @@ struct Advert: View {
 
 struct Tittle: View {
     var text: String
+    var name: String = ""
     
     var body: some View {
-        Text(text)
-            .foregroundColor(.offWhite)
-            .font(.system(size: UIScreen.main.bounds.height / 30))
-            .fontWeight(.bold)
-            .animation(.spring())
+        HStack {
+            if !name.isEmpty {
+                Image(systemName: name)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
+                    .foregroundColor(.offWhite)
+            }
+            
+            Text(text)
+                .foregroundColor(.offWhite)
+                .font(.system(size: UIScreen.main.bounds.height / 30))
+                .fontWeight(.bold)
+                .animation(.spring())
+        }
     }
 }
 
@@ -836,7 +925,22 @@ struct Wall: View {
                 Color.clear
                 
             case .maps:
-                Color.clear
+                Color.clear                         // Пофиксить появление после тапа по картинке и сделать нормальные карточки как в Navigation
+                                                    // Передалет полностью maps, так чтобы картинка и текст подстраивались под карточку
+//                Image(systemName: "location")
+//                    .resizable()
+//                    .aspectRatio(contentMode: .fit)
+//                    .foregroundColor(.darkEnd)
+//                    .opacity(0.8)
+//                    .padding()
+                
+            case .news:
+                Image(systemName: "newspaper")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(.darkEnd)
+                    .opacity(0.8)
+                    .padding()
             }
         }
         .edgesIgnoringSafeArea(.all)
@@ -876,15 +980,14 @@ struct Section2: View {
     var body: some View {
         Section(header: Text("Университет")) {
             Picker(selection: $previewIndexU, label: Text("Название")) {
-                ForEach(0 ..< name.count) {
+                ForEach(0..<name.count) {
                     Text(self.name[$0])
                 }
             }
             
             Picker(selection: $previewIndexF, label: Text("Факультет")) {
-                ForEach(0 ..< fac.count) { index in
-                    Text(self.fac[index])
-                        .tag(index)
+                ForEach(0..<fac.count) {
+                    Text(self.fac[$0])
                 }
             }
             
@@ -907,6 +1010,7 @@ struct Section3: View {
                 Text("2.2.1")
             }
         }
+            .listRowBackground(Color.gray.opacity(0.5))
     }
 }
 
@@ -919,17 +1023,24 @@ struct Section5: View {
     var body: some View {
         Section(header: Text("Интерфейс")) {
             Picker(selection: $previewIndexT, label: Text("Тема")) {
-                ForEach(0 ..< theme.count) {
+                ForEach(0..<theme.count) {
                     Text(self.theme[$0])
                 }
             }
+                .onAppear(perform: {
+                    UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Color.gray.opacity(0.8))
+                    UISegmentedControl.appearance().backgroundColor = .clear
+                })
+                .pickerStyle(SegmentedPickerStyle())
             
             Picker(selection: $previewIndexL, label: Text("Язык")) {
-                ForEach(0 ..< language.count) {
+                ForEach(0..<language.count) {
                     Text(self.language[$0])
                 }
             }
+            
         }
+            .listRowBackground(Color.gray.opacity(0.5))
     }
 }
 
@@ -952,73 +1063,72 @@ struct Properties: View {
     @State var show = false
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Form {
-                GeometryReader { g in
-                    Tittle(text: "Настройки")
-                        .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
-                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
-                        .frame(width: g.size.width)
-                        .onReceive(self.time) { (_) in
-                            
-                            let y = g.frame(in: .global).minY
-                            
-                            if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
-                                
-                                withAnimation{
+        VStack {
+            NavigationView {
+                ZStack(alignment: .top) {
+                    Form {
+                        GeometryReader { g in
+                            Tittle(text: "Настройки")
+                                .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
+                                .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
+                                .frame(width: g.size.width)
+                                .onReceive(self.time) { (_) in
+                                    let y = g.frame(in: .global).minY
                                     
-                                    self.show = true
+                                    if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
+                                        withAnimation{
+                                            self.show = true
+                                        }
+                                    } else {
+                                            self.show = false
+                                    }
+                                    
                                 }
-                            } else {
-                                
-                          
-                                    
-                                    self.show = false
-                                
-                            }
-                            
+                                .padding(.top, UIScreen.main.bounds.height*0.05)
                         }
-                        .padding(.top, UIScreen.main.bounds.height*0.05)
-                }
-                
-                .listRowBackground(Color.clear)
-                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
-                
-                
-                Section2()
-                Section1()
-                Section5()
-                Section3()
-                Section4()
-                
-                Spacer()
-                    .frame(height: UIScreen.main.bounds.height/4)
-                    .listRowBackground(Color.clear)
-            }
-            .onAppear{
-                UITableView.appearance().backgroundColor = .clear
-                UITableView.appearance().showsVerticalScrollIndicator = false
-            }
-            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-            .background(
-                ZStack {
-                    LinearGradient(Color.darkEnd, Color.darkStart)
+                        
+                        .listRowBackground(Color.clear)
+                        .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
+                        
+                        
+                        Section2()
+                        Section1()
+                        Section5()
+                        Section3()
+                        Section4()
+                        
+                        Spacer()
+                            .frame(height: UIScreen.main.bounds.height/4)
+                            .listRowBackground(Color.clear)
+                    }
+                    .onAppear{
+                        UITableView.appearance().backgroundColor = .clear
+                        UITableView.appearance().showsVerticalScrollIndicator = false
+                    }
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .background(
+                        ZStack {
+                            LinearGradient(Color.darkEnd, Color.darkStart)
+                            
+                            Image(systemName: "gearshape")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .foregroundColor(.darkEnd)
+                                .opacity(0.8)
+                                .padding()
+                        }
+                    )
                     
-                    Image(systemName: "gearshape")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundColor(.darkEnd)
-                        .opacity(0.8)
-                        .padding()
+                    if self.show {
+                        header(text: "Настройки")
+                    }
                 }
-            )
-            
-            if self.show {
-                header(text: "Настройки")
+                    .navigationBarHidden(true)
             }
+            .preferredColorScheme(.dark)
         }
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .ignoresSafeArea(.all)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .ignoresSafeArea(.all)
     }
 }
 
@@ -1044,12 +1154,69 @@ struct selectedRoute: Identifiable {
     var route: [String] = ["", ""]
 }
 
+struct CardView: View {
+    var geometry: GeometryProxy
+    var isFaceUp: Bool
+    var imageName: [String]
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 25)
+            .fill(LinearGradient(Color.darkEnd, Color.darkStart))
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .shadow(color: Color.darkStart, radius: 5, x: isFaceUp ? -5 : 5, y: -5)
+            .shadow(color: Color.darkEnd, radius: 5, x: isFaceUp ? 5 : -5, y: 5)
+            .padding(.vertical, 30)
+            .overlay(
+                ZStack {
+                    if isFaceUp {
+                        HStack{
+                            ForEach(0..<imageName.count) { name in
+                                Image(systemName: imageName[name])
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: geometry.size.width*0.3, height: geometry.size.height/4)
+                                    .foregroundColor(.darkEnd)
+                                    .opacity(0.8)
+                                    .animation(nil)
+                            }
+                        }
+                    }
+                }
+            )
+    }
+}
+
+struct CardFlip: ViewModifier {
+    var isFaceUp: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .rotation3DEffect(
+                Angle.degrees(isFaceUp ? 0: 180),
+                axis: (0,1,0),
+                perspective: 0.3
+            )
+    }
+}
+
+extension View {
+    func cardFlip(isFaceUp: Bool) -> some View {
+        modifier(CardFlip(isFaceUp: isFaceUp))
+    }
+}
+
+struct fastCard: Identifiable {
+    var id: UUID = UUID()
+    var isFaceUp: Bool = true
+    var images: [String]
+}
+
 struct Navigation: View {
     @State var listOfSelectedRoutes: [selectedRoute] = []
     var geometry: GeometryProxy
     @State var errorInput: String = ""
-    @State var sourse: String = "" // 2068
-    @State var destination: String = "" // 2115
+    @State var sourse: String = "2068" // 2068
+    @State var destination: String = "2115" // 2115
     @State var commonFriend: [UnweightedEdge] = []
     @State var Vertex: [Point] = []
     @State var paint: [String] = []
@@ -1065,15 +1232,29 @@ struct Navigation: View {
     @State var pos = 0
     @State var scrollContentOffset: CGFloat = CGFloat.zero
     @State var scrollContentOffsetSum: CGFloat = CGFloat(110)
-    
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
     @State var show = false
+    @State var Cards: [fastCard] = [
+        .init(images: ["rectangle.portrait.and.arrow.right.fill"]),
+        .init(images: ["fork.knife"]),
+        .init(images: ["w.square.fill", "c.square.fill"]),
+        .init(images: ["cross"]),
+        .init(images: ["dollarsign.circle"])
+    ]
+    @State var errorType: errorSignal = .nothing
+    @State var selectedMaps: [[String]] = [
+        ["2068", "2069"],
+        ["2068", "2115"],
+        ["2006", "2073"],
+        ["2103", "2177"],
+        ["2115", "2109"],
+    ]
     
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) { // Для анимации []
                 GeometryReader { g in
-                    Tittle(text: "Навигация")
+                    Tittle(text: "Навигация", name: "location.viewfinder")
                         .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
                         .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
                         .frame(width: g.size.width)
@@ -1104,12 +1285,12 @@ struct Navigation: View {
                         .fill(LinearGradient(Color.darkEnd, Color.darkStart))
                         .frame(width: UIScreen.main.bounds.width*0.9, height: UIScreen.main.bounds.height / 4.5)
                         .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                        .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
+                        .shadow(color: Color.darkEnd, radius: 5, x: 5, y: 5)
                         .overlay(
                             HStack {
                                 Spacer()
                                 
-                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput)
+                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput, errorType: $errorType)
                                 
                                 Spacer()
                                 
@@ -1117,12 +1298,12 @@ struct Navigation: View {
                                     makeRoute()
                                 }) {
                                     
-                                    Image("search_white")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
-                                        .padding(.horizontal, 30)
-                                    
+                                        Image(systemName: "magnifyingglass")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .foregroundColor(.offWhite)
+                                            .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                            .padding(.horizontal, 30)
                                 }
                                 .buttonStyle(ColorfulButtonStyleWithoutShadows())
                                 
@@ -1132,97 +1313,83 @@ struct Navigation: View {
                     inputError(errorInput: $errorInput)
                         .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
                     
-                    Text("Быстрый поиск")
-                        .foregroundColor(.offWhite)
-                        .font(.system(size: UIScreen.main.bounds.height / 30))
-                        .fontWeight(.bold)
-                    
-                    GeometryReader { proxy in
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                Spacer()
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                    .padding(.vertical, 30)
-                                
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                    .padding(.vertical, 30)
-                                
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                    .padding(.vertical, 30)
-                                
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(LinearGradient(Color.darkEnd, Color.darkStart))
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: proxy.size.height)
-                                    .shadow(color: Color.darkStart, radius: 5, x: -5, y: -5)
-                                    .shadow(color: Color.darkEnd, radius: 10, x: 10, y: 10)
-                                    .padding(.vertical, 30)
-                            }
-                            .padding(.trailing, 15)
-                        }
-                    }
-                    .frame(height: UIScreen.main.bounds.height / 4.5)
-                    .padding(.bottom, 50)
-                    
-                    VStack(spacing: 20) {
-                        Text("Избранные маршруты")
+                    HStack {
+                        Image(systemName: "clock")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
+                            .foregroundColor(.offWhite)
+                        
+                        Text("Быстрый поиск")
                             .foregroundColor(.offWhite)
                             .font(.system(size: UIScreen.main.bounds.height / 30))
                             .fontWeight(.bold)
-                        
-                        
-                        
-                        Button(action: {}) {
-                            Text("2068 -> 2069")
-                                .foregroundColor(.offWhite)
-                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                .fontWeight(.semibold)
-                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                    }
+                    
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            ScrollViewReader { value in
+                                HStack(spacing: -30) {
+                                    ForEach(Cards.indices) { index in
+                                        GeometryReader { gg in
+                                            CardView(geometry: gg, isFaceUp: self.Cards[index].isFaceUp, imageName: self.Cards[index].images)
+                                                .cardFlip(isFaceUp: self.Cards[index].isFaceUp)
+                                                .animation(.spring())
+                                                .onTapGesture {
+                                                    if Cards[index].isFaceUp {
+                                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                                            value.scrollTo(index, anchor: .center)
+                                                        }
+                                                    }
+                                                    
+                                                    self.Cards[index].isFaceUp.toggle()
+ 
+                                                    for i in 0..<Cards.count {
+                                                        if i != index {
+                                                            self.Cards[i].isFaceUp = true
+                                                        }
+                                                    }
+                                                }
+                                                .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
+                                        }
+                                        .id(index)
+                                        .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
+                                        .padding(.bottom, 50)
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                .onAppear(perform: {
+                                    value.scrollTo(Int(Cards.count/2), anchor: .center)
+                                })
+                                .padding(.trailing, 15)
+                            }
                         }
-                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                        
-                        Button(action: {}) {
-                            Text("2068 -> 2069")
+
+                    VStack(spacing: 20) {
+                        HStack {
+                            Image(systemName: "bookmark")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.width*0.05)
                                 .foregroundColor(.offWhite)
-                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                .fontWeight(.semibold)
-                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
-                        }
-                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                        
-                        Button(action: {}) {
-                            Text("2068 -> 2069")
+                            
+                            Text("Избранные маршруты")
                                 .foregroundColor(.offWhite)
-                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                .fontWeight(.semibold)
-                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                                .font(.system(size: UIScreen.main.bounds.height / 30))
+                                .fontWeight(.bold)
                         }
-                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
                         
-                        Button(action: {}) {
-                            Text("2068 -> 2069")
-                                .foregroundColor(.offWhite)
-                                .font(.system(size: UIScreen.main.bounds.height / 40))
-                                .fontWeight(.semibold)
-                                .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                        ForEach(selectedMaps.indices) { index in
+                            Button(action: {
+                                makeRouteFast(first: self.selectedMaps[index][0], last: self.selectedMaps[index][1])
+                            }) {
+                                Text("\(self.selectedMaps[index][0]) -> \(self.selectedMaps[index][1])")
+                                    .foregroundColor(.offWhite)
+                                    .font(.system(size: UIScreen.main.bounds.height / 40))
+                                    .fontWeight(.semibold)
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                            }
+                            .buttonStyle(ColorfulButtonStyleRoundedRectangle())
                         }
-                        .buttonStyle(ColorfulButtonStyleRoundedRectangle())
-                        
-                        
-                        
-                        //                                    selectedRoutes(route: ["2068", "2115"])
-                        //                                    selectedRoutes(route: ["2068", "2115"])
                     }
                     Spacer()
                     
@@ -1248,14 +1415,34 @@ struct Navigation: View {
         })
     }
     
+    func makeRouteFast(first: String, last: String) {
+        errorType = .nothing
+        commonFriend = cityGraph.bfs(from: find(p: first), to: find(p: last))
+        
+        s = parse(way: commonFriend.description)
+        sPoint = s.map {Vertex[Int($0)!].name}
+        paint = getLines()
+        
+        for x in 0...paint.count - 1 where x % 3 == 0 {
+            maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2]), forKey: x / 3)
+        }
+        
+        errorInput = ""
+        viewRouter.currentPage = .maps
+    }
+    
     func makeRoute() {
         if find(p: sourse) == Point() && find(p: destination) == Point() {
             errorInput = "Кабинет \(sourse) и \(destination) не найдены"
+            errorType = .all
         } else if find(p: sourse) == Point() {
             errorInput = "Кабинет \(sourse) не найден"
+            errorType = .start
         } else if find(p: destination) == Point() {
             errorInput = "Кабинет \(destination) не найден"
+            errorType = .end
         } else {
+            errorType = .nothing
             commonFriend = cityGraph.bfs(from: find(p: sourse), to: find(p: destination))
             
             s = parse(way: commonFriend.description)
@@ -1447,7 +1634,7 @@ struct dataList: View {
         ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 GeometryReader { g in
-                    Tittle(text: "Расписание")
+                    Tittle(text: "Расписание", name: "list.bullet.below.rectangle")
                         .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
                         .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
                         .frame(width: g.size.width)
@@ -1495,15 +1682,15 @@ struct header: View {
     
     var body: some View {
         VStack {
-            Text(text)
-                .foregroundColor(.offWhite)
-                .font(.system(size: UIScreen.main.bounds.height / 30))
-                .fontWeight(.bold)
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
-                .padding(.top, 15)
-                .background(BlurBG())
-                .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
-                .edgesIgnoringSafeArea(.top)
+                Text(text)
+                    .foregroundColor(.offWhite)
+                    .font(.system(size: UIScreen.main.bounds.height / 30))
+                    .fontWeight(.bold)
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
+                    .padding(.top, 15)
+                    .background(BlurBG())
+                    .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
+                    .edgesIgnoringSafeArea(.top)
             
             Spacer()
         }
@@ -1513,8 +1700,6 @@ struct header: View {
 struct BlurBG : UIViewRepresentable {
     
     func makeUIView(context: Context) -> UIVisualEffectView{
-        
-        // for dark mode adoption...
         
         let view = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
         
