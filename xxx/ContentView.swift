@@ -50,10 +50,10 @@ struct ColorfulButtonStyle: ButtonStyle {
 struct ColorfulButtonStyleRoundedRectangle: ButtonStyle {
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
-            .padding(30)
-            .contentShape(RoundedRectangle(cornerRadius: 25))
+            .padding(20)
+            .contentShape(RoundedRectangle(cornerRadius: 15))
             .background(
-                ColorfulBackground(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
+                ColorfulBackground(isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 15))
             )
         //            .animation(nil)
     }
@@ -376,7 +376,21 @@ struct ContentView: View {
     @StateObject var viewRouter: ViewRouter
     @State var menu: Bool = true
     
+//    @State var colors: [Color] = [.red, .green, .yellow]
+    
     var body: some View {
+//        ScrollView(.vertical, showsIndicators: false) {
+//            ForEach(colors.indices) { index in
+//                GeometryReader { g in
+//                    RoundedRectangle(cornerRadius: 25)
+//                        .fill(self.colors[index])
+//                        .rotation3DEffect(Angle(degrees: Double(g.frame(in: .global).minY - UIScreen.main.bounds.height*0.35) / -20), axis: (x: 100, y: 0, z: 0))
+//                }
+//                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
+//            }
+//        }
+//        .padding(.top)
+        
         GeometryReader { geometry in
             switch viewRouter.currentPage {
 
@@ -395,7 +409,7 @@ struct ContentView: View {
             case .maps:
                 Wall(page: .maps)
                 navigationPage(maps: $maps, viewRouter: viewRouter)
-                
+
             case .news:
                 Wall(page: .news)
                 news()
@@ -478,35 +492,39 @@ struct navigationPage: View {
     @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
-    @State var show = false
     @State var bookmark: Bool = false
+    @State var offsetValue: CGFloat = .zero
     
     var body: some View {
-        GeometryReader { g in
             ZStack(alignment: .top) {
                 ZStack {
-                        ScrollView(.vertical) {
+                        ScrollView(.vertical, showsIndicators: false) {
                             Spacer()
                                 .frame(height: UIScreen.main.bounds.height*0.08)
                             
                             ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                                GeometryReader { gg in
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 25)
-                                            .fill(LinearGradient(Color.darkStart, Color.darkEnd))
-                                            .shadow(color: Color.darkEnd, radius: 5, x: 5, y: 5)
-                                            
-                                            Map(number: map, image: maps[map]!.image, text: maps[map]!.text, geometry: gg)
-                                                .onTapGesture(count: 1) {
-                                                    zIndexValue = true
-                                                    image = maps[map]!.image
-                                                    blurMap = true
-                                                }
-                                    }
+                                Map(number: map, image: maps[map]!.image, text: maps[map]!.text)
+                                    .onTapGesture(count: 1) {
+                                        zIndexValue = true
+                                        image = maps[map]!.image
+                                        blurMap = true
                                 }
-                                .frame(width: g.size.width, height: g.size.height * 0.35, alignment: .center)
-                                Spacer()
-                                    .frame(height: g.size.height*0.09)
+                                
+//                                GeometryReader { gg in
+//                                    RoundedRectangle(cornerRadius: 25)
+//                                        .fill(LinearGradient(Color.darkStart, Color.darkEnd))
+//                                        .shadow(color: Color.darkEnd, radius: 5, x: 5, y: 5)
+//                                        .overlay(
+//                                            Map(number: map, image: maps[map]!.image, text: maps[map]!.text, geometry: gg)
+//                                                    .onTapGesture(count: 1) {
+//                                                        zIndexValue = true
+//                                                        image = maps[map]!.image
+//                                                        blurMap = true
+//                                                    }
+//                                        )
+//
+//                                }
+//                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
                             }
                         }
                             .disabled(zIndexValue)
@@ -562,18 +580,14 @@ struct navigationPage: View {
                                 .frame(width: 50, height: 50)
                                 .toggleStyle(ColorfulToggleStyle())
                             }
-//                        .ignoresSafeArea(edges: .top)
                                 .padding(.horizontal, 30)
-                                .padding(.top, -10)
                         
                         Spacer()
                 }
                           
                 }
             }
-            .frame(width: g.size.width, height: g.size.height)
-        }
-        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
+            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
     
     func clearSVG () {
@@ -594,19 +608,24 @@ struct Map: View {
     var number: Int
     var image: UIImage
     var text: String
-    var geometry: GeometryProxy
     
     var body: some View {
         VStack {
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: geometry.size.width, height: geometry.size.height * 0.9, alignment: .center)
+                .scaledToFit()
             
-            Text(text)
-                .foregroundColor(Color.white)
-                .frame(height: UIScreen.main.bounds.height * 0.1)
+            HStack {
+                Circle()
+                    .fill(Color.lightStart)
+                    .shadow(color: Color.white, radius: 2.5)
+                    .frame(width: 5, height: 5)
+                    
+                Text(text)
+                    .foregroundColor(Color.white)
+            }
         }
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
         .padding(.vertical, 5)
     }
 }
@@ -925,14 +944,14 @@ struct Wall: View {
                 Color.clear
                 
             case .maps:
-                Color.clear                         // Пофиксить появление после тапа по картинке и сделать нормальные карточки как в Navigation
+//                Color.clear                         // Пофиксить появление после тапа по картинке и сделать нормальные карточки как в Navigation
                                                     // Передалет полностью maps, так чтобы картинка и текст подстраивались под карточку
-//                Image(systemName: "location")
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .foregroundColor(.darkEnd)
-//                    .opacity(0.8)
-//                    .padding()
+                Image(systemName: "location")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(.darkEnd)
+                    .opacity(0.8)
+                    .padding()
                 
             case .news:
                 Image(systemName: "newspaper")
@@ -948,8 +967,8 @@ struct Wall: View {
 }
 
 struct Section1: View {
-    @State var username: String = ""
-    @State var password: String = ""
+    @State var username: String = "login"
+    @State var password: String = "password"
     @State var isPrivate: Bool = false
     
     var body: some View {
@@ -971,9 +990,8 @@ struct Section1: View {
 }
 
 struct Section2: View {
-    @State private var previewIndexU = 0
-    @State private var previewIndexF = 0
-    @State private var selectedOptionIndex = 0
+    @State private var previewIndexU = 1
+    @State private var previewIndexF = 3
     var name = [" ", "МГИМО", "МГУ", "НИЯУ МИФИ"]
     var fac = [" ", "1", "2", "3"]
     
@@ -1014,6 +1032,20 @@ struct Section3: View {
     }
 }
 
+struct Section4: View {
+    var body: some View {
+        Section {
+            Button(action: {
+                print("Perform an action here...")
+            }) {
+                Text("Сбросить все настройки")
+                    .foregroundColor(Color.lightStart)
+            }
+        }
+        .listRowBackground(Color.gray.opacity(0.5))
+    }
+}
+
 struct Section5: View {
     @State private var previewIndexT = 0
     @State private var previewIndexL = 0
@@ -1041,20 +1073,6 @@ struct Section5: View {
             
         }
             .listRowBackground(Color.gray.opacity(0.5))
-    }
-}
-
-struct Section4: View {
-    var body: some View {
-        Section {
-            Button(action: {
-                print("Perform an action here...")
-            }) {
-                Text("Сбросить все настройки")
-                    .foregroundColor(Color.lightStart)
-            }
-        }
-        .listRowBackground(Color.gray.opacity(0.5))
     }
 }
 
@@ -1215,8 +1233,8 @@ struct Navigation: View {
     @State var listOfSelectedRoutes: [selectedRoute] = []
     var geometry: GeometryProxy
     @State var errorInput: String = ""
-    @State var sourse: String = "2068" // 2068
-    @State var destination: String = "2115" // 2115
+    @State var sourse: String = "" // 2068
+    @State var destination: String = "" // 2115
     @State var commonFriend: [UnweightedEdge] = []
     @State var Vertex: [Point] = []
     @State var paint: [String] = []
@@ -1391,11 +1409,11 @@ struct Navigation: View {
                             .buttonStyle(ColorfulButtonStyleRoundedRectangle())
                         }
                     }
-                    Spacer()
-                    
-                    Advert()
-                    
-                    Advert()
+//                    Spacer()
+//
+//                    Advert()
+//
+//                    Advert()
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height/4)
