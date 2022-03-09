@@ -369,12 +369,21 @@ struct mapContents: Hashable {
     var image: UIImage = UIImage()
     var text: String = String()
     var blur: Bool = false
+    var way: [String] = ["", ""]
 }
 
 struct ContentView: View {
     @State var maps: Dictionary<Int, mapContents> = Dictionary()
     @StateObject var viewRouter: ViewRouter
     @State var menu: Bool = true
+    @State var isBookmark: Bool = false
+    @State var selectedMaps: [[String]] = [
+        ["2068", "2069"],
+        ["2068", "2115"],
+        ["2006", "2073"],
+        ["2103", "2177"],
+        ["2115", "2109"],
+    ]
     
 //    @State var colors: [Color] = [.red, .green, .yellow]
     
@@ -396,7 +405,7 @@ struct ContentView: View {
 
             case .navigation:
                 Wall(page: .navigation)
-                Navigation(geometry: geometry, maps: $maps, viewRouter: viewRouter)
+                Navigation(geometry: geometry, maps: $maps, viewRouter: viewRouter, selectedMaps: $selectedMaps, isBookmark: $isBookmark)
 
             case .datalist:
                 Wall(page: .datalist)
@@ -408,7 +417,7 @@ struct ContentView: View {
 
             case .maps:
                 Wall(page: .maps)
-                navigationPage(maps: $maps, viewRouter: viewRouter)
+                navigationPage(maps: $maps, viewRouter: viewRouter, bookmark: $isBookmark, selectedMaps: $selectedMaps)
 
             case .news:
                 Wall(page: .news)
@@ -492,8 +501,9 @@ struct navigationPage: View {
     @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
-    @State var bookmark: Bool = false
+    @Binding var bookmark: Bool
     @State var offsetValue: CGFloat = .zero
+    @Binding var selectedMaps: [[String]]
     
     var body: some View {
             ZStack(alignment: .top) {
@@ -551,12 +561,22 @@ struct navigationPage: View {
                     VStack {
                         HStack {
                                 Button(action: {
+                                    if bookmark {
+                                        if !self.selectedMaps.contains(self.maps[0]!.way) {
+                                            self.selectedMaps.append(self.maps[0]!.way)
+                                        }
+                                    } else {
+                                        if self.selectedMaps.contains(self.maps[0]!.way) {
+                                            self.selectedMaps.remove(at: self.selectedMaps.firstIndex(of: self.maps[0]!.way)!)
+                                        }
+                                    }
+                                    
+                                    bookmark = false
                                     clearSVG()
                                     maps.removeAll()
                                     zIndexValue = false
                                     image = UIImage()
                                     blurMap = false
-                                    bookmark = false
                                     viewRouter.currentPage = .navigation
                                 }) {
                                         Image(systemName: "arrow.uturn.backward")
@@ -630,6 +650,14 @@ struct Map: View {
     }
 }
 
+extension View {
+     public func addBorder<S>(_ content: S, width: CGFloat = 1, cornerRadius: CGFloat) -> some View where S : ShapeStyle {
+         let roundedRect = RoundedRectangle(cornerRadius: cornerRadius)
+         return clipShape(roundedRect)
+              .overlay(roundedRect.strokeBorder(content, lineWidth: width))
+     }
+ }
+
 struct tabBarIcons: View {
     var geometry: GeometryProxy
     @StateObject var viewRouter: ViewRouter
@@ -643,12 +671,11 @@ struct tabBarIcons: View {
                 
                 ZStack {
                     Rectangle() // UIColor.systemBackground
-                        .fill(
-                            LinearGradient(Color.darkStart.opacity(0.97), Color.darkEnd)
-                        )
+                        .fill(LinearGradient(Color.darkStart.opacity(0.97), Color.darkEnd))
                         .frame(width: geometry.size.width)
                         .cornerRadius(15, corners: [.topRight, .topLeft])
-                    
+                        .addBorder(Color.darkEnd, width: 2, cornerRadius: 15)
+
                     HStack {
                         Spacer()
                         
@@ -676,47 +703,11 @@ struct tabBarIcons: View {
                     }
                     .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
                     .frame(width: geometry.size.width, height: geometry.size.height/9)
-                    
-                    
-                    // Линия над меню
-                    
-                    
-                    //                        .overlay(
-                    //                            Rectangle()
-                    //                                .frame(width: nil, height: 1, alignment: .top)
-                    //                                .foregroundColor(.gray)
-                    //                                ,
-                    //                            alignment: .top
-                    //                        )
-                    
-                    
                     .shadow(color: .black, radius: 15)
                     
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height/10)
                 .frame(alignment: .bottom)
-                //                ZStack{
-                //                    Color.white.frame(width: geometry.size.width, height: geometry.size.height/8).opacity(0.9).overlay(
-                //                        HStack {
-                //                            Spacer()
-                //                            TabBarIconNew(viewRouter: viewRouter, assignedPage: .navigation, width: geometry.size.width, height: geometry.size.height, systemIconName: "homekit", tabName: "Navigation")
-                //                            Spacer()
-                //                            TabBarIconNew(viewRouter: viewRouter, assignedPage: .properties, width: geometry.size.width, height: geometry.size.height, systemIconName: "heart", tabName: "Properties")
-                //                            Spacer()
-                //                        }
-                //                            .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
-                //                            .overlay(
-                //                                Rectangle()
-                //                                    .frame(width: nil, height: 1, alignment: .top)
-                //                                    .foregroundColor(.gray)
-                //                                ,
-                //                                alignment: .top
-                //                            )
-                //        //                    .blur(radius: 15)
-                //        //                    .background(.pink)
-                //                            .shadow(color: .black, radius: 15)
-                //                    )
-                //                }
             }
         }
     }
@@ -1260,13 +1251,8 @@ struct Navigation: View {
         .init(images: ["dollarsign.circle"])
     ]
     @State var errorType: errorSignal = .nothing
-    @State var selectedMaps: [[String]] = [
-        ["2068", "2069"],
-        ["2068", "2115"],
-        ["2006", "2073"],
-        ["2103", "2177"],
-        ["2115", "2109"],
-    ]
+    @Binding var selectedMaps: [[String]]
+    @Binding var isBookmark: Bool
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -1402,9 +1388,9 @@ struct Navigation: View {
                             }) {
                                 Text("\(self.selectedMaps[index][0]) -> \(self.selectedMaps[index][1])")
                                     .foregroundColor(.offWhite)
-                                    .font(.system(size: UIScreen.main.bounds.height / 40))
+                                    .font(.system(size: UIScreen.main.bounds.height / 50))
                                     .fontWeight(.semibold)
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: 15)
+                                    .frame(width: UIScreen.main.bounds.width*0.8)
                             }
                             .buttonStyle(ColorfulButtonStyleRoundedRectangle())
                         }
@@ -1436,13 +1422,14 @@ struct Navigation: View {
     func makeRouteFast(first: String, last: String) {
         errorType = .nothing
         commonFriend = cityGraph.bfs(from: find(p: first), to: find(p: last))
+        self.isBookmark = true
         
         s = parse(way: commonFriend.description)
         sPoint = s.map {Vertex[Int($0)!].name}
         paint = getLines()
         
         for x in 0...paint.count - 1 where x % 3 == 0 {
-            maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2]), forKey: x / 3)
+            maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [first, last]), forKey: x / 3)
         }
         
         errorInput = ""
@@ -1462,13 +1449,14 @@ struct Navigation: View {
         } else {
             errorType = .nothing
             commonFriend = cityGraph.bfs(from: find(p: sourse), to: find(p: destination))
+            self.isBookmark = selectedMaps.contains([sourse, destination])
             
             s = parse(way: commonFriend.description)
             sPoint = s.map {Vertex[Int($0)!].name}
             paint = getLines()
             
             for x in 0...paint.count - 1 where x % 3 == 0 {
-                maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2]), forKey: x / 3)
+                maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [sourse, destination]), forKey: x / 3)
             }
             
             errorInput = ""
