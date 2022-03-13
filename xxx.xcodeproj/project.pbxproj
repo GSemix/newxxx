@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9382D7C827DA391B001E5F5A /* UserDefaultsSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */; };
 		93F5420C279C5750000B175D /* xxxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420B279C5750000B175D /* xxxApp.swift */; };
 		93F5420E279C5750000B175D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420D279C5750000B175D /* ContentView.swift */; };
 		93F54210279C5751000B175D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93F5420F279C5751000B175D /* Assets.xcassets */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		45BB804E4F5A49F158A0DB10 /* Pods-xxx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-xxx.release.xcconfig"; path = "Target Support Files/Pods-xxx/Pods-xxx.release.xcconfig"; sourceTree = "<group>"; };
 		63CE7D3BFBB38F732FA1877B /* Pods_xxx.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_xxx.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsSettings.swift; sourceTree = "<group>"; };
 		93F54208279C5750000B175D /* xxx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = xxx.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F5420B279C5750000B175D /* xxxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = xxxApp.swift; sourceTree = "<group>"; };
 		93F5420D279C5750000B175D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 				93F54219279C577C000B175D /* Maps */,
 				93F5420B279C5750000B175D /* xxxApp.swift */,
 				93F5420D279C5750000B175D /* ContentView.swift */,
+				9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */,
 				93F5420F279C5751000B175D /* Assets.xcassets */,
 				93F54211279C5751000B175D /* Preview Content */,
 			);
@@ -94,7 +97,6 @@
 				CE0BF93F0EEBC98C6D4AD758 /* Pods-xxx.debug.xcconfig */,
 				45BB804E4F5A49F158A0DB10 /* Pods-xxx.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -214,6 +216,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9382D7C827DA391B001E5F5A /* UserDefaultsSettings.swift in Sources */,
 				93F5420E279C5750000B175D /* ContentView.swift in Sources */,
 				93F5420C279C5750000B175D /* xxxApp.swift in Sources */,
 			);
