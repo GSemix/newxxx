@@ -15,6 +15,7 @@ import MaterialComponents.MaterialTextControls_FilledTextAreas
 import MaterialComponents.MaterialTextControls_FilledTextFields
 import MaterialComponents.MaterialTextControls_OutlinedTextAreas
 import MaterialComponents.MaterialTextControls_OutlinedTextFields
+//import ImageViewer
 
 // --------------------------------
 
@@ -36,7 +37,9 @@ struct ColorfulButtonStyleRoundedRectangle: ButtonStyle {
     
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
+            .foregroundColor(settings.theme == 0 ? configuration.isPressed ? .darkEnd  : .lightStart : configuration.isPressed ? .offWhite : .purpleEnd)
             .padding(20)
+            .frame(alignment: .center)
             .contentShape(RoundedRectangle(cornerRadius: 15))
             .background(
                 ColorfulBackground(settings: settings, isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 15))
@@ -83,15 +86,15 @@ struct ColorfulBackground<S: Shape>: View {
         ZStack {
             if isHighlighted {
                 shape
-                    .fill(LinearGradient(settings.theme == 0 ? Color.lightEnd : Color.purpleEnd, settings.theme == 0 ? Color.lightStart : Color.purpleStart))
-                    .overlay(shape.stroke(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), lineWidth: 4))
+                    .fill(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd))
+//                    .overlay(shape.stroke(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), lineWidth: 4))
                     .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: 5, y: 5)
                     .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: -5, y: -5)
                 
             } else {
                 shape
-                    .fill(LinearGradient(settings.theme == 0 ? Color.darkStart : Color.offWhite, settings.theme == 0 ? Color.darkEnd : Color.offWhite))
-                    .overlay(shape.stroke(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), lineWidth: 4))
+                    .fill(LinearGradient(settings.theme == 0 ? Color.darkEnd : Color.offWhite, settings.theme == 0 ? Color.darkStart : Color.offWhite))
+//                    .overlay(shape.stroke(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), lineWidth: 4))
                     .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: -5, y: -5)
                     .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: 5, y: 5)
             }
@@ -104,6 +107,7 @@ struct ColorfulButtonStyleWithoutShadows: ButtonStyle {
     
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
+            .foregroundColor(settings.theme == 0 ? .offWhite : configuration.isPressed ? .offWhite : .darkStart)
             .contentShape(RoundedRectangle(cornerRadius: 25))
             .background(
                 ColorfulBackgroundWithoutShadows(settings: settings, isHighlighted: configuration.isPressed, shape: RoundedRectangle(cornerRadius: 25))
@@ -172,11 +176,11 @@ extension Binding {
     }
     
     func willSet(_ willSet: @escaping ((newValue: Value, oldValue: Value)) -> Void) -> Binding<Value> {
-            return .init(get: { self.wrappedValue }, set: { newValue in
-                willSet((newValue, self.wrappedValue))
-                self.wrappedValue = newValue
-            })
-        }
+        return .init(get: { self.wrappedValue }, set: { newValue in
+            willSet((newValue, self.wrappedValue))
+            self.wrappedValue = newValue
+        })
+    }
 }
 
 extension View {
@@ -195,7 +199,7 @@ extension View {
     public func addBorder<S>(_ content: S, width: CGFloat = 1, cornerRadius: CGFloat) -> some View where S : ShapeStyle {
         let roundedRect = RoundedRectangle(cornerRadius: cornerRadius)
         return clipShape(roundedRect)
-             .overlay(roundedRect.strokeBorder(content, lineWidth: width))
+            .overlay(roundedRect.strokeBorder(content, lineWidth: width))
     }
 }
 
@@ -272,8 +276,7 @@ class PinchZoomView: UIView {
     private var location: CGPoint = .zero
     private var numberOfTouches: Int = 0
     
-    
-    public init() {
+    init() {
         super.init(frame: .zero)
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch(gesture:)))
@@ -285,11 +288,10 @@ class PinchZoomView: UIView {
         fatalError()
     }
     
-    @objc private func pinch(gesture: UIPinchGestureRecognizer) { // !!!
+    @objc private func pinch(gesture: UIPinchGestureRecognizer) {
         
         switch gesture.state {
         case .began:
-            
             isPinching = true
             startLocation = gesture.location(in: self)
             anchor = UnitPoint(x: startLocation.x / bounds.width, y: startLocation.y / bounds.height)
@@ -311,16 +313,17 @@ class PinchZoomView: UIView {
             offset = CGSize(width: location.x - startLocation.x, height: location.y - startLocation.y)
             
         case .ended, .cancelled, .failed:
-
-            isPinching = false
-            scale = 1.0
-            anchor = .center
-            offset = .zero
-            
+            withAnimation(.interactiveSpring()) {
+                isPinching = false
+                scale = 1.0
+                anchor = .center
+                offset = .zero
+            }
         default:
             break
         }
     }
+    
 }
 
 protocol PinchZoomViewDelgate: AnyObject {
@@ -331,6 +334,7 @@ protocol PinchZoomViewDelgate: AnyObject {
 }
 
 struct PinchZoom: UIViewRepresentable {
+    
     @Binding var scale: CGFloat
     @Binding var anchor: UnitPoint
     @Binding var offset: CGSize
@@ -383,7 +387,6 @@ struct PinchToZoom: ViewModifier {
         content
             .scaleEffect(scale, anchor: anchor)
             .offset(offset)
-            .animation(isPinching ? .none : .spring(), value: true)
             .overlay(PinchZoom(scale: $scale, anchor: $anchor, offset: $offset, isPinching: $isPinching))
     }
 }
@@ -404,27 +407,25 @@ public struct PlaceholderStyle: ViewModifier {
     var showPlaceHolder: Bool
     var placeholder: String
     var center: Bool
+    @ObservedObject var settings: UserDefaultsSettings
     
     public func body(content: Content) -> some View {
-        ZStack(alignment: center ? .center: .leading) {
-            Color.offWhite
+        ZStack(alignment: center ? .center : .leading) {
+            Color.clear
             
             if showPlaceHolder {
-                HStack {
-                    Spacer()
-                        .frame(width: center ? 0: 5)
-                    Text(placeholder)
-                        .foregroundColor(Color(#colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)))
-                        .font(.body)
-                        .padding(.horizontal, 15)
-                }
+                Text(placeholder)
+                    .foregroundColor(settings.theme == 0 ? Color.offWhite.opacity(0.7) : Color(#colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)))
+                    .font(.body)
             }
+            
             content
-                .foregroundColor(Color.darkStart)
-                .padding(.horizontal, 20)
+                .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
+                .padding(.leading, UIScreen.main.bounds.width*0.05)
         }
     }
 }
+
 
 struct mapContents: Hashable {
     var name: String = String()
@@ -445,33 +446,33 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             switch viewRouter.currentPage {
-
+                
             case .navigation:
                 Wall(settings: settings, page: .navigation)
                 Navigation(geometry: geometry, maps: $maps, viewRouter: viewRouter, settings: settings, isBookmark: $isBookmark)
-//                    .transition(.scale)
-                    
+                //                    .transition(.scale)
+
             case .datalist:
                 Wall(settings: settings, page: .datalist)
                 dataList(settings: settings)
-//                    .transition(.scale)
-
+                //                    .transition(.scale)
+                
             case .properties:
-//                Wall(settings: settings, page: .properties)
+                //                Wall(settings: settings, page: .properties)
                 Properties(settings: settings)
-//                    .transition(.scale)
-
+                //                    .transition(.scale)
+                
             case .maps:
                 Wall(settings: settings, page: .maps)
                 navigationPage(maps: $maps, viewRouter: viewRouter, bookmark: $isBookmark, settings: settings)
                     .transition(.scale)
-
+                
             case .news:
                 Wall(settings: settings, page: .news)
                 news(settings: settings)
-//                    .transition(.scale)
+                //                    .transition(.scale)
             }
-
+            
             tabBarIcons(settings: settings, geometry: geometry, viewRouter: viewRouter)
         }
         .preferredColorScheme(settings.theme == 0 ? .dark : .light)
@@ -533,11 +534,11 @@ struct TabBarIconNew: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: width/15, height: height/23)
-                        .foregroundColor(settings.theme == 0 ? Color(viewRouter.currentPage == assignedPage ? .white : .gray) : Color(viewRouter.currentPage == assignedPage ? .black : .gray))
+                        .foregroundColor(settings.theme == 0 ? Color(viewRouter.currentPage == assignedPage ? UIColor(.lightStart) : .gray) : Color(viewRouter.currentPage == assignedPage ? UIColor(Color.purpleStart) : .gray))
                     
                     Text(tabName)
                         .font(.system(size: 10)) // 18
-                        .foregroundColor(settings.theme == 0 ? Color(viewRouter.currentPage == assignedPage ? .white : .gray) : Color(viewRouter.currentPage == assignedPage ? .black : .gray))
+                        .foregroundColor(settings.theme == 0 ? Color(viewRouter.currentPage == assignedPage ? UIColor(.lightStart) : .gray) : Color(viewRouter.currentPage == assignedPage ? UIColor(Color.purpleStart) : .gray))
                 }
             }
             .padding(.horizontal, width/8/6)
@@ -549,217 +550,59 @@ struct TabBarIconNew: View {
 }
 
 struct ZoomableScrollView<Content: View>: UIViewRepresentable {
-  private var content: Content
-
+    private var content: Content
+    
     init(@ViewBuilder content: () -> Content) {
-    self.content = content()
-  }
-
+        
+        self.content = content()
+    }
+    
     func makeUIView(context: Context) -> UIScrollView {
-    // set up the UIScrollView
-    let scrollView = UIScrollView()
-    scrollView.delegate = context.coordinator  // for viewForZooming(in:)
-    scrollView.maximumZoomScale = 4
-    scrollView.minimumZoomScale = 1
-    scrollView.showsVerticalScrollIndicator = false
-    scrollView.showsHorizontalScrollIndicator = false
-    scrollView.bouncesZoom = true
-
-    // create a UIHostingController to hold our SwiftUI content
-    let hostedView = context.coordinator.hostingController.view!
-    hostedView.translatesAutoresizingMaskIntoConstraints = true
-    hostedView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    hostedView.frame = scrollView.bounds
-    hostedView.backgroundColor = UIColor.clear
-    scrollView.addSubview(hostedView)
-
-    return scrollView
-  }
-
-  func makeCoordinator() -> Coordinator {
-    return Coordinator(hostingController: UIHostingController(rootView: self.content))
-  }
-
-  func updateUIView(_ uiView: UIScrollView, context: Context) {
-    // update the hosting controller's SwiftUI content
-    context.coordinator.hostingController.rootView = self.content
-    assert(context.coordinator.hostingController.view.superview == uiView)
-  }
-
-  // MARK: - Coordinator
-
-  class Coordinator: NSObject, UIScrollViewDelegate {
-    var hostingController: UIHostingController<Content>
-
-    init(hostingController: UIHostingController<Content>) {
-      self.hostingController = hostingController
+        
+        // set up the UIScrollView
+        let scrollView = UIScrollView()
+        scrollView.delegate = context.coordinator  // for viewForZooming(in:)
+        scrollView.maximumZoomScale = 4
+        scrollView.minimumZoomScale = 1
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.bouncesZoom = true
+        
+        // create a UIHostingController to hold our SwiftUI content
+        let hostedView = context.coordinator.hostingController.view!
+        hostedView.translatesAutoresizingMaskIntoConstraints = true
+        hostedView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        hostedView.frame = scrollView.bounds
+        hostedView.backgroundColor = UIColor.clear
+        scrollView.addSubview(hostedView)
+        
+        return scrollView
     }
-
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-      return hostingController.view
+    
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(hostingController: UIHostingController(rootView: self.content))
     }
-  }
-}
-
-
-// Constrains a value between the limits
-func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
-  min(maxValue, max(minValue, value))
-}
-
-// UIView that relies on UIPinchGestureRecognizer to detect scale, anchor point and offset
-class ZoomableView: UIView {
-  let minScale: CGFloat
-  let maxScale: CGFloat
-  let scaleChange: (CGFloat) -> Void
-  let anchorChange: (UnitPoint) -> Void
-  let offsetChange: (CGSize) -> Void
-
-  private var scale: CGFloat = 1 {
-    didSet {
-      scaleChange(scale)
+    
+    func updateUIView(_ uiView: UIScrollView, context: Context) {
+        // update the hosting controller's SwiftUI content
+        context.coordinator.hostingController.rootView = self.content
+        assert(context.coordinator.hostingController.view.superview == uiView)
     }
-  }
-  private var anchor: UnitPoint = .center {
-    didSet {
-      anchorChange(anchor)
-    }
-  }
-  private var offset: CGSize = .zero {
-    didSet {
-      offsetChange(offset)
-    }
-  }
-
-  private var isPinching: Bool = false
-  private var startLocation: CGPoint = .zero
-  private var location: CGPoint = .zero
-  private var numberOfTouches: Int = 0
-  // track the previous scale to allow for incremental zooms in/out
-  // with multiple sequential pinches
-  private var prevScale: CGFloat = 0
-
-  init(minScale: CGFloat,
-       maxScale: CGFloat,
-       scaleChange: @escaping (CGFloat) -> Void,
-       anchorChange: @escaping (UnitPoint) -> Void,
-       offsetChange: @escaping (CGSize) -> Void) {
-    self.minScale = minScale
-    self.maxScale = maxScale
-    self.scaleChange = scaleChange
-    self.anchorChange = anchorChange
-    self.offsetChange = offsetChange
-    super.init(frame: .zero)
-    let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch(gesture:)))
-    pinchGesture.cancelsTouchesInView = false
-    addGestureRecognizer(pinchGesture)
-  }
-
-  required init?(coder: NSCoder) {
-    fatalError()
-  }
-
-  @objc private func pinch(gesture: UIPinchGestureRecognizer) {
-    switch gesture.state {
-    case .began:
-      isPinching = true
-      startLocation = gesture.location(in: self)
-      anchor = UnitPoint(x: startLocation.x / bounds.width, y: startLocation.y / bounds.height)
-      numberOfTouches = gesture.numberOfTouches
-      prevScale = scale
-    case .changed:
-      if gesture.numberOfTouches != numberOfTouches {
-        let newLocation = gesture.location(in: self)
-        let jumpDifference = CGSize(width: newLocation.x - location.x, height: newLocation.y - location.y)
-        startLocation = CGPoint(x: startLocation.x + jumpDifference.width, y: startLocation.y + jumpDifference.height)
-        numberOfTouches = gesture.numberOfTouches
-      }
-      scale = clamp(prevScale * gesture.scale, minScale, maxScale)
-      location = gesture.location(in: self)
-      offset = CGSize(width: location.x - startLocation.x, height: location.y - startLocation.y)
-    case .possible, .cancelled, .failed:
-      isPinching = false
-      scale = 1.0
-      anchor = .center
-      offset = .zero
-    case .ended:
-      isPinching = false
-    @unknown default:
-      break
-    }
-  }
-}
-
-// Wraps ZoomableView and exposes it to SwiftUI
-struct ZoomableOverlay: UIViewRepresentable {
-  @Binding var scale: CGFloat
-  @Binding var anchor: UnitPoint
-  @Binding var offset: CGSize
-  let minScale: CGFloat
-  let maxScale: CGFloat
-
-  func makeUIView(context: Context) -> ZoomableView {
-    let uiView = ZoomableView(minScale: minScale,
-                              maxScale: maxScale,
-                              scaleChange: { scale = $0 },
-                              anchorChange: { anchor = $0 },
-                              offsetChange: { offset = $0 })
-    return uiView
-  }
-
-  func updateUIView(_ uiView: ZoomableView, context: Context) { }
-}
-
-// Applies ZoomableOverlay to intercept gestures and apply scale,
-// anchor point and offset
-struct Zoomable: ViewModifier {
-    @Binding var scale: CGFloat
-    @Binding private var offset: CGSize
-    let minScale: CGFloat
-    let maxScale: CGFloat
-    @State private var anchor: UnitPoint = .center
-
-    init(scale: Binding<CGFloat>,
-         offset: Binding<CGSize>,
-         minScale: CGFloat,
-         maxScale: CGFloat) {
-        _scale = scale
-        _offset = offset
-        self.minScale = minScale
-        self.maxScale = maxScale
-    }
-
-  func body(content: Content) -> some View {
-    content
-      .scaleEffect(scale, anchor: anchor)
-      .offset(offset)
-      .animation(.spring()) // looks more natural
-      .overlay(ZoomableOverlay(scale: $scale,
-                               anchor: $anchor,
-                               offset: $offset,
-                               minScale: minScale,
-                               maxScale: maxScale))
-      .gesture(TapGesture(count: 2).onEnded {
-        if scale != 1 { // reset the scale
-          scale = clamp(1, minScale, maxScale)
-          anchor = .center
-          offset = .zero
-        } else { // quick zoom
-          scale = clamp(2, minScale, maxScale)
+    
+    // MARK: - Coordinator
+    
+    class Coordinator: NSObject, UIScrollViewDelegate {
+        var hostingController: UIHostingController<Content>
+        
+        init(hostingController: UIHostingController<Content>) {
+            self.hostingController = hostingController
         }
-      })
-  }
-}
-
-extension View {
-  func zoomable(scale: Binding<CGFloat>,
-                offset: Binding<CGSize>,
-                minScale: CGFloat = 1,
-                maxScale: CGFloat = 3) -> some View {
-      modifier(Zoomable(scale: scale, offset: offset, minScale: minScale, maxScale: maxScale))
-  }
-}
-
+        
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return hostingController.view
+        }
+    }
+} // Херня, которая постоянно крашится и нихера не сбарсывает настройки
 
 struct navigationPage: View {
     @Binding var maps: Dictionary<Int, mapContents>
@@ -768,145 +611,103 @@ struct navigationPage: View {
     @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
     @Binding var bookmark: Bool
-    @State var offsetValue: CGFloat = .zero
     @ObservedObject var settings: UserDefaultsSettings
-    @State private var scale: CGFloat = 1.0
-    @State var offset = CGSize.zero
-    @State var newPosition = CGSize.zero
+    @State var showImageViewer: Bool = false
+    @State var blurValue: Double = 0
     
     var body: some View {
-            ZStack(alignment: .top) {
-                ZStack {
-                        ScrollView(.vertical, showsIndicators: false) {
-                            Spacer()
-                                .frame(height: UIScreen.main.bounds.height*0.08)
-                            
-                            ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                                Map(settings: settings, number: map, image: maps[map]!.image, text: maps[map]!.text)
-                                    .onTapGesture(count: 1) {
-                                        zIndexValue = true
-                                        image = maps[map]!.image
-                                        blurMap = true
+        ZStack(alignment: .top) {
+            ZStack {
+                ScrollView(.vertical, showsIndicators: false) {
+                    Spacer()
+                        .frame(height: UIScreen.main.bounds.height*0.1)
+                    
+                    ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
+                        VStack{
+                            Map(settings: settings, image: maps[map]!.image, text: maps[map]!.text)
+                                .onTapGesture(count: 1) {
+                                    image = maps[map]!.image
+                                    withAnimation(.interactiveSpring()) {
+                                        showImageViewer = true
+                                    }
                                 }
-                            }
                         }
-                            .disabled(zIndexValue)
-                            .blur(radius: blurMap ? 15 : 0)
-                            .zIndex(zIndexValue ? 0 : 1)
-                    
-                  
-                    
-                        
-                            VStack {
-                                Spacer()
-                                
-                                Image(uiImage: image)
-                                    .resizable()
-                                    
-                                    .scaledToFit()
-                                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.25, alignment: .center)
-                                    
-                                    
-                                        
-                                Spacer()
-                            }
-                            .zoomable(scale: $scale, offset: $offset)
-                            .gesture(DragGesture()
-                                            .onChanged { value in
-                                                self.offset = CGSize(width: value.translation.width + self.newPosition.width, height: value.translation.height + self.newPosition.height)
-                                        }
-                                            .onEnded { value in
-                                                self.offset = CGSize(width: value.translation.width + self.newPosition.width, height: value.translation.height + self.newPosition.height)
-                                                print(self.newPosition.width)
-                                                self.newPosition = self.offset
-                                            }
-                                    )
-                        .zIndex(zIndexValue ? 1 : 0)
-                    
-//                    if blurMap {
-//                        VStack {
-//                            Spacer()
-//                            Image(uiImage: image)
-//                                .resizable()
-//                                .aspectRatio(contentMode: .fit)
-//                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.25, alignment: .center)
-//                            Spacer()
-//                        }
-//                            .pinchToZoom()
-////                            .zIndex(zIndexValue ? 1 : 0)
-//                    }
-                    
-                            
                     }
-                        .onTapGesture(count: 1) {
-                            zIndexValue = false
-                            image = UIImage()
-                            blurMap = false
-                            scale = 1.0
-                            offset = .zero
-                        }
-                        .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
-                        .edgesIgnoringSafeArea(.bottom)
-                
-                ZStack(alignment: .top) {
-                    header(settings: settings, text: "Маршрут")
-                    VStack {
-                        HStack {
-                                Button(action: {
-                                    withAnimation {
-                                        bookmark = false
-                                        clearSVG()
-                                        maps.removeAll()
-                                        zIndexValue = false
-                                        image = UIImage()
-                                        blurMap = false
-                                        viewRouter.currentPage = .navigation
-                                    }
-                                }) {
-                                        Image(systemName: "arrow.uturn.backward")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .foregroundColor(.lightStart)
-                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
-                                        .padding(15)
-                                        .clipShape(Capsule())
-                                }
-                                    .frame(width: 50, height: 50)
-
-                                Spacer()
-                            
-                            Toggle(isOn: $bookmark.didSet { _ in
-                                    if bookmark {
-                                        if !self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                            self.settings.selectedMaps.append(self.maps[0]!.way.joined(separator: " "))
-                                        }
-                                    } else {
-                                        if self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                            self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: self.maps[0]!.way.joined(separator: " "))!)
-                                        }
-                                    }
-                                }
-                            ) {
-                                    Image(systemName: self.bookmark ? "bookmark.fill" : "bookmark")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
-                                        .foregroundColor(Color.lightStart)
-                                }
-                                .frame(width: 50, height: 50)
-                                .toggleStyle(ImageToggle())
+                    
+                    Spacer()
+                        .frame(height: UIScreen.main.bounds.height*0.08)
+                }
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .blur(radius: blurValue)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(ZoomingImage(viewerShown: self.$showImageViewer, image: self.$image, blurValue: self.$blurValue))
+            .onChange(of: showImageViewer, perform: { newValue in
+                if !newValue {
+                    image = UIImage()
+                    blurValue = 0
+                } else {
+                    blurValue = 15
+                }
+            })
+            .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
+            .edgesIgnoringSafeArea(.bottom)
+            
+            ZStack(alignment: .top) {
+                header(settings: settings, text: "Маршрут")
+                VStack {
+                    HStack {
+                        Button(action: {
+                            withAnimation {
+                                clearSVG()
+                                maps.removeAll()
+                                zIndexValue = false
+                                image = UIImage()
+                                blurMap = false
+                                viewRouter.currentPage = .navigation
                             }
-                                .padding(.horizontal, 30)
+                        }) {
+                            Image(systemName: "arrow.uturn.backward")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
+                                .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                .padding(15)
+                                .clipShape(Capsule())
+                        }
+                        .frame(width: 50, height: 50)
                         
                         Spacer()
+                        
+                        Toggle(isOn: $bookmark.didSet { _ in
+                            if bookmark {
+                                if !self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
+                                    self.settings.selectedMaps.append(self.maps[0]!.way.joined(separator: " "))
+                                }
+                            } else {
+                                if self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
+                                    self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: self.maps[0]!.way.joined(separator: " "))!)
+                                }
+                            }
+                        }
+                        ) {
+                            Image(systemName: self.bookmark ? "bookmark.fill" : "bookmark")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
+                        }
+                        .frame(width: 50, height: 50)
+                        .toggleStyle(ImageToggle())
+                    }
+                    .padding(.horizontal, 30)
+                    
+                    Spacer()
                 }
-                          
-                }
+                
             }
-            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
-            .onAppear(perform: {
-                print("qwe")
-            })
+        }
+        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
     
     func clearSVG () {
@@ -927,36 +728,40 @@ struct ContentView_Previews: PreviewProvider {
 
 struct Map: View {
     @ObservedObject var settings: UserDefaultsSettings
-    var number: Int
     var image: UIImage
     var text: String
     
     var body: some View {
         VStack {
-            ZoomableScrollView {
+            VStack {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(height: UIScreen.main.bounds.height*0.25)
+                    .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)
             }
             .frame(height: UIScreen.main.bounds.height*0.3)
-            .cornerRadius(15)
-            .addBorder(Color.lightStart, width: 2, cornerRadius: 15)
-            
-            
+            .addBorder(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), width: 2, cornerRadius: 15)
             
             HStack {
-                Circle()
-                    .fill(Color.lightStart)
-                    .shadow(color: Color.white, radius: 2.5)
-                    .frame(width: 5, height: 5)
-                    
+                Firefly(color: settings.theme == 0 ? Color.lightStart : Color.purpleStart)
+                
                 Text(text)
                     .foregroundColor(Color.white)
             }
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
         .padding(.vertical, 5)
+    }
+}
+
+struct Firefly: View {
+    var color: Color
+    
+    var body: some View {
+        Circle()
+            .fill(color)
+            .shadow(color: color, radius: 2.5)
+            .frame(width: 5, height: 5)
     }
 }
 
@@ -975,10 +780,10 @@ struct tabBarIcons: View {
                 ZStack {
                     Rectangle() // UIColor.systemBackground
                         .fill(LinearGradient(settings.theme == 0 ? Color.darkStart.opacity(0.97) : Color.offWhite, settings.theme == 0 ? Color.darkEnd : Color.offWhite))
-                        .frame(width: geometry.size.width)
+                        .frame(width: geometry.size.width + 2)
                         .cornerRadius(15, corners: [.topRight, .topLeft])
-                        .addBorder(Color.darkStart.opacity(0.8), width: 2, cornerRadius: 15)
-
+                        .addBorder(LinearGradient(settings.theme == 0 ? Color.lightEnd : Color.purpleEnd, settings.theme == 0 ? Color.lightStart.opacity(0.8) : Color.purpleStart.opacity(0.8)), width: 1, cornerRadius: 15)
+                    
                     HStack {
                         Spacer()
                         
@@ -1006,7 +811,7 @@ struct tabBarIcons: View {
                     }
                     .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
                     .frame(width: geometry.size.width, height: geometry.size.height/9)
-//                    .shadow(color: .black, radius: 15)
+                    //                    .shadow(color: .black, radius: 15)
                     
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height/10)
@@ -1039,6 +844,7 @@ struct entryField: View {
     @Binding var destination: String
     @Binding var errorInput: String
     @Binding var errorType: errorSignal
+    @ObservedObject var settings: UserDefaultsSettings
     
     var body: some View {
         VStack {
@@ -1049,11 +855,14 @@ struct entryField: View {
                     PlaceholderStyle(
                         showPlaceHolder: sourse.isEmpty,
                         placeholder: "Начальный кабинет",
-                        center: false
+                        center: true,
+                        settings: settings
                     )
                 )
                 .onChange(of: sourse) { newValue in
-                    errorInput = ""
+                    withAnimation {
+                        errorInput = ""
+                    }
                     
                     if errorType == .all {
                         errorType = .end
@@ -1063,7 +872,7 @@ struct entryField: View {
                 }
                 .textContentType(.dateTime)
                 .cornerRadius(10)
-                .frame(height: 50, alignment: .leading)
+                .frame(height: 50)
                 .multilineTextAlignment(.leading)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .start || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
@@ -1071,9 +880,8 @@ struct entryField: View {
             
             Image(systemName: "chevron.down")
                 .resizable()
-                .aspectRatio(contentMode: .fill)
-                .foregroundColor(Color.offWhite)
-                .frame(width: UIScreen.main.bounds.width*0.9/15, height: UIScreen.main.bounds.height / 4.5 / 10)
+                .foregroundColor(settings.theme == 0 ? Color.lightEnd : Color.purpleEnd)
+                .frame(width: UIScreen.main.bounds.width*0.9/2.5, height: UIScreen.main.bounds.height / 4.5 / 10)
             
             Spacer()
             
@@ -1082,12 +890,15 @@ struct entryField: View {
                     PlaceholderStyle(
                         showPlaceHolder: destination.isEmpty,
                         placeholder: "Конечный кабинет",
-                        center: false
+                        center: true,
+                        settings: settings
                     )
                 )
                 .onChange(of: destination) { newValue in
-                    errorInput = ""
-                    
+                    withAnimation {
+                        errorInput = ""
+                    }
+                        
                     if errorType == .all {
                         errorType = .start
                     } else if errorType == .end {
@@ -1095,7 +906,7 @@ struct entryField: View {
                     }
                 }
                 .cornerRadius(10)
-                .frame(height: 50, alignment: .leading)
+                .frame(height: 50)
                 .multilineTextAlignment(.leading)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .end || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
@@ -1167,36 +978,15 @@ struct Tittle: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
-                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
             }
             
             Text(text)
-                .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                 .font(.system(size: UIScreen.main.bounds.height / 30))
                 .fontWeight(.bold)
                 .animation(.spring())
         }
-    }
-}
-
-struct selectedRoutes: View {
-    var route: [String] // Binding
-    
-    var body: some View {
-        Button(action: {}) {
-            ZStack {
-                Rectangle()
-                    .strokeBorder(Color("Purple"), lineWidth: 5)
-                    .foregroundColor(Color.white)
-                    .frame(width: UIScreen.main.bounds.width*0.9, height: 50)
-                
-                Text(route[0] + "\t->\t" + route[1])
-                    .font(.system(size: UIScreen.main.bounds.width / 20))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color.black.opacity(0.6))
-            }
-        }
-        .buttonStyle(GrowingButtonWays())
     }
 }
 
@@ -1207,7 +997,7 @@ struct inputError: View {
         Text(errorInput)
             .font(.system(size: 20))
             .foregroundColor(.red.opacity(0.7))
-            .animation(.spring())
+            .transition(.opacity)                       // Не работает transition для Text
     }
 }
 
@@ -1225,8 +1015,8 @@ struct Wall: View {
                 Image(systemName: "location")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart) // opacity 0.6
-                    .opacity(0.8)
+                    .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
+                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
                     .padding()
                 
             case .datalist:
@@ -1234,7 +1024,7 @@ struct Wall: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
-                    .opacity(0.8)
+                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
                     .padding()
                 
             case .properties:
@@ -1242,17 +1032,15 @@ struct Wall: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
-                    .opacity(0.8)
+                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
                     .padding()
                 
             case .maps:
-//                Color.clear                         // Пофиксить появление после тапа по картинке и сделать нормальные карточки как в Navigation
-                                                    // Передалет полностью maps, так чтобы картинка и текст подстраивались под карточку
                 Image(systemName: "location")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
-                    .opacity(0.8)
+                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
                     .padding()
                 
             case .news:
@@ -1260,7 +1048,7 @@ struct Wall: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
-                    .opacity(0.8)
+                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
                     .padding()
             }
         }
@@ -1333,7 +1121,7 @@ struct Section3: View {
                 Text("2.2.1")
             }
         }
-            .listRowBackground(Color.gray.opacity(0.5))
+        .listRowBackground(Color.gray.opacity(0.5))
     }
 }
 
@@ -1374,11 +1162,11 @@ struct Section5: View {
                     
                 }
             }
-                .onAppear(perform: {
-                    UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Color.gray.opacity(0.8))
-                    UISegmentedControl.appearance().backgroundColor = .clear
-                })
-                .pickerStyle(SegmentedPickerStyle())
+            .onAppear(perform: {
+                UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Color.gray.opacity(0.8))
+                UISegmentedControl.appearance().backgroundColor = .clear
+            })
+            .pickerStyle(SegmentedPickerStyle())
             
             Picker(selection: $previewIndexL, label: Text("Язык")) {
                 ForEach(0..<language.count) {
@@ -1387,7 +1175,7 @@ struct Section5: View {
             }
             
         }
-            .listRowBackground(Color.gray.opacity(0.5))
+        .listRowBackground(Color.gray.opacity(0.5))
     }
 }
 
@@ -1407,29 +1195,29 @@ struct Properties: View {
                             .frame(width: g.size.width)
                             .onReceive(self.time) { (_) in
                                 let y = g.frame(in: .global).minY
-                                    
+                                
                                 if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
                                     withAnimation{
                                         self.show = true
                                     }
                                 } else {
-                                        self.show = false
+                                    self.show = false
                                 }
-                                    
+                                
                             }
                             .padding(.top, UIScreen.main.bounds.height*0.05)
                     }
-                        
+                    
                     .listRowBackground(Color.clear)
                     .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
-                        
-                        
+                    
+                    
                     Section2(settings: settings)
                     Section1(settings: settings)
                     Section5(settings: settings)
                     Section3(settings: settings)
                     Section4(settings: settings)
-                        
+                    
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height/4)
                         .listRowBackground(Color.clear)
@@ -1441,18 +1229,18 @@ struct Properties: View {
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                 .background(
                     Wall(settings: settings, page: .properties)
-                    )
-                    
-                    if self.show {
-                        header(settings: settings, text: "Настройки")
-                    }
+                )
+                
+                if self.show {
+                    header(settings: settings, text: "Настройки")
                 }
-                    .navigationBarHidden(true)
             }
-            .preferredColorScheme(settings.theme == 0 ? .dark : .light)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
-            .ignoresSafeArea(.all)
-            .padding(.horizontal, -10)
+            .navigationBarHidden(true)
+        }
+        .preferredColorScheme(settings.theme == 0 ? .dark : .light)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .ignoresSafeArea(.all)
+        .padding(.horizontal, -10)
     }
 }
 
@@ -1467,6 +1255,7 @@ struct CardView: View {
     var geometry: GeometryProxy
     var isFaceUp: Bool
     var imageName: [String]
+    var color: LinearGradient
     
     var body: some View {
         RoundedRectangle(cornerRadius: 25)
@@ -1478,16 +1267,24 @@ struct CardView: View {
             .overlay(
                 ZStack {
                     if isFaceUp {
-                        HStack{
+                        HStack {
+                            Spacer()
+                                .frame(width: geometry.size.width/5)
+                            
                             ForEach(0..<imageName.count) { name in
-                                Image(systemName: imageName[name])
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: geometry.size.width*0.3, height: geometry.size.height/4)
-                                    .foregroundColor(settings.theme == 0 ? .darkEnd : Color.gray)
-                                    .opacity(0.8)
-                                    .animation(nil)
+                                color
+                                    .mask(
+                                        Image(systemName: imageName[name])
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: geometry.size.width*0.3, height: geometry.size.height/4)
+                                            .opacity(0.8)
+                                            .animation(nil)
+                                    )
                             }
+                            
+                            Spacer()
+                                .frame(width: geometry.size.width/5)
                         }
                     }
                 }
@@ -1497,7 +1294,7 @@ struct CardView: View {
 
 struct CardFlip: ViewModifier {
     var isFaceUp: Bool
-
+    
     func body(content: Content) -> some View {
         content
             .rotation3DEffect(
@@ -1512,6 +1309,7 @@ struct fastCard: Identifiable {
     var id: UUID = UUID()
     var isFaceUp: Bool = true
     var images: [String]
+    var color: LinearGradient
 }
 
 struct Navigation: View {
@@ -1536,15 +1334,15 @@ struct Navigation: View {
     @State var scrollContentOffsetSum: CGFloat = CGFloat(110)
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
     @State var show = false
+    @ObservedObject var settings: UserDefaultsSettings
     @State var Cards: [fastCard] = [
-        .init(images: ["rectangle.portrait.and.arrow.right.fill"]),
-        .init(images: ["fork.knife"]),
-        .init(images: ["w.square.fill", "c.square.fill"]),
-        .init(images: ["cross"]),
-        .init(images: ["dollarsign.circle"])
+        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown)),
+        .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray)),
+        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart)),
+        .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2))),
+        .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray))
     ]
     @State var errorType: errorSignal = .nothing
-    @ObservedObject var settings: UserDefaultsSettings
     @Binding var isBookmark: Bool
     
     var body: some View {
@@ -1556,7 +1354,7 @@ struct Navigation: View {
                         .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
                         .frame(width: g.size.width)
                         .onReceive(self.time) { (_) in
- 
+                            
                             let y = g.frame(in: .global).minY
                             
                             if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
@@ -1583,7 +1381,7 @@ struct Navigation: View {
                             HStack {
                                 Spacer()
                                 
-                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput, errorType: $errorType)
+                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings)
                                 
                                 Spacer()
                                 
@@ -1593,12 +1391,11 @@ struct Navigation: View {
                                     }
                                 }) {
                                     
-                                        Image(systemName: "magnifyingglass")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                                            .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
-                                            .padding(.horizontal, 30)
+                                    Image(systemName: "magnifyingglass")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                        .padding(.horizontal, 30)
                                 }
                                 .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
                                 
@@ -1613,62 +1410,62 @@ struct Navigation: View {
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
-                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                         
                         Text("Быстрый поиск")
-                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                             .font(.system(size: UIScreen.main.bounds.height / 30))
                             .fontWeight(.bold)
                     }
                     
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            ScrollViewReader { value in
-                                HStack(spacing: -30) {
-                                    ForEach(Cards.indices) { index in
-                                        GeometryReader { gg in
-                                            CardView(settings: settings, geometry: gg, isFaceUp: self.Cards[index].isFaceUp, imageName: self.Cards[index].images)
-                                                .cardFlip(isFaceUp: self.Cards[index].isFaceUp)
-                                                .animation(.spring())
-                                                .onTapGesture {
-                                                    if Cards[index].isFaceUp {
-                                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
-                                                            value.scrollTo(index, anchor: .center)
-                                                        }
-                                                    }
-                                                    
-                                                    self.Cards[index].isFaceUp.toggle()
- 
-                                                    for i in 0..<Cards.count {
-                                                        if i != index {
-                                                            self.Cards[i].isFaceUp = true
-                                                        }
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        ScrollViewReader { value in
+                            HStack(spacing: -30) {
+                                ForEach(Cards.indices) { index in
+                                    GeometryReader { gg in
+                                        CardView(settings: settings, geometry: gg, isFaceUp: self.Cards[index].isFaceUp, imageName: self.Cards[index].images, color: self.Cards[index].color)
+                                            .cardFlip(isFaceUp: self.Cards[index].isFaceUp)
+                                            .animation(.spring())
+                                            .onTapGesture {
+                                                if Cards[index].isFaceUp {
+                                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                                        value.scrollTo(index, anchor: .center)
                                                     }
                                                 }
-                                                .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
-                                        }
-                                        .id(index)
-                                        .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
-                                        .padding(.bottom, 50)
-                                        .padding(.horizontal)
+                                                
+                                                self.Cards[index].isFaceUp.toggle()
+                                                
+                                                for i in 0..<Cards.count {
+                                                    if i != index {
+                                                        self.Cards[i].isFaceUp = true
+                                                    }
+                                                }
+                                            }
+                                            .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
                                     }
+                                    .id(index)
+                                    .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
+                                    .padding(.bottom, 50)
+                                    .padding(.horizontal)
                                 }
-                                .onAppear(perform: {
-                                    value.scrollTo(Int(Cards.count/2), anchor: .center)
-                                })
-                                .padding(.trailing, 15)
                             }
+                            .onAppear(perform: {
+                                value.scrollTo(Int(Cards.count/2), anchor: .center)
+                            })
+                            .padding(.trailing, 15)
                         }
-
+                    }
+                    
                     VStack(spacing: 20) {
                         HStack {
                             Image(systemName: "bookmark")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.width*0.05)
-                                .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                                .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                             
                             Text("Избранные маршруты")
-                                .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
+                                .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                                 .font(.system(size: UIScreen.main.bounds.height / 30))
                                 .fontWeight(.bold)
                         }
@@ -1681,11 +1478,31 @@ struct Navigation: View {
                                         makeRouteFast(first: numbers[0], last: numbers[1])
                                     }
                                 }) {
-                                    Text(self.settings.selectedMaps[index].replacingOccurrences(of: " ", with: " -> "))
-                                        .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                                        .font(.system(size: UIScreen.main.bounds.height / 50))
-                                        .fontWeight(.semibold)
-                                        .frame(width: UIScreen.main.bounds.width*0.8)
+                                    HStack{
+//                                        Text(self.settings.selectedMaps[index].replacingOccurrences(of: " ", with: " -> "))
+                                        
+                                        Spacer()
+                                        
+                                        Text(self.settings.selectedMaps[index].split(separator: " ")[0])
+                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                            .fontWeight(.semibold)
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.forward.square")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: UIScreen.main.bounds.width*0.8*0.07)
+                                        
+                                        Spacer()
+                                        
+                                        Text(self.settings.selectedMaps[index].split(separator: " ")[1])
+                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                            .fontWeight(.semibold)
+                                        
+                                        Spacer()
+                                    }
+                                    .frame(width: geometry.size.width * 0.8)
                                 }
                                 .buttonStyle(ColorfulButtonStyleRoundedRectangle(settings: settings))
                             }
@@ -1696,11 +1513,11 @@ struct Navigation: View {
                                 .fontWeight(.semibold)
                         }
                     }
-//                    Spacer()
-//
-//                    Advert()
-//
-//                    Advert()
+                    //                    Spacer()
+                    //
+                    //                    Advert()
+                    //
+                    //                    Advert()
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height/4)
@@ -1716,6 +1533,8 @@ struct Navigation: View {
         .edgesIgnoringSafeArea(.top)
         .edgesIgnoringSafeArea(.bottom)
         .onAppear(perform: {
+            self.Cards[2].color = settings.theme == 0 ? LinearGradient(.lightEnd, .lightStart) : LinearGradient(.purpleEnd, .purpleStart)
+            
             start()
         })
     }
@@ -1734,23 +1553,36 @@ struct Navigation: View {
         }
         
         errorInput = ""
+        
         viewRouter.currentPage = .maps
     }
     
     func makeRoute() {
-        if find(p: sourse) == Point() && find(p: destination) == Point() {
-            errorInput = "Кабинет \(sourse) и \(destination) не найдены"
-            errorType = .all
-        } else if find(p: sourse) == Point() {
-            errorInput = "Кабинет \(sourse) не найден"
-            errorType = .start
-        } else if find(p: destination) == Point() {
-            errorInput = "Кабинет \(destination) не найден"
-            errorType = .end
-        } else {
-            errorType = .nothing
-            commonFriend = cityGraph.bfs(from: find(p: sourse), to: find(p: destination))
-            self.isBookmark = self.settings.selectedMaps.contains("\(sourse) \(destination)")
+            if sourse == destination {
+                errorInput = "Введены одинаковые кабинеты"
+                errorType = .all
+                
+                return
+            } else if find(p: sourse) == Point() && find(p: destination) == Point() {
+                errorInput = "Кабинет \(sourse) и \(destination) не найдены"
+                errorType = .all
+                
+                return
+            } else if find(p: sourse) == Point() {
+                errorInput = "Кабинет \(sourse) не найден"
+                errorType = .start
+                
+                return
+            } else if find(p: destination) == Point() {
+                errorInput = "Кабинет \(destination) не найден"
+                errorType = .end
+                
+                return
+            } else {
+                errorType = .nothing
+                commonFriend = cityGraph.bfs(from: find(p: sourse), to: find(p: destination))
+                self.isBookmark = self.settings.selectedMaps.contains("\(sourse) \(destination)")
+            }
             
             s = parse(way: commonFriend.description)
             sPoint = s.map {Vertex[Int($0)!].name}
@@ -1761,8 +1593,8 @@ struct Navigation: View {
             }
             
             errorInput = ""
+            
             viewRouter.currentPage = .maps
-        }
     }
     
     func find (p: String) -> Point {
@@ -1968,13 +1800,13 @@ struct dataList: View {
                     .opacity(0.5)
                     .padding()
             }
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
             
             if self.show{
                 header(settings: settings, text: "Расписание")
             }
         }
-            .ignoresSafeArea(.all)
+        .ignoresSafeArea(.all)
     }
 }
 
@@ -1984,15 +1816,15 @@ struct header: View {
     
     var body: some View {
         VStack {
-                Text(text)
-                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkEnd)
-                    .font(.system(size: UIScreen.main.bounds.height / 30))
-                    .fontWeight(.bold)
-                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
-                    .padding(.top, 15)
-                    .background(BlurBG(settings: settings))
-                    .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
-                    .edgesIgnoringSafeArea(.top)
+            Text(text)
+                .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+                .font(.system(size: UIScreen.main.bounds.height / 30))
+                .fontWeight(.bold)
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
+                .padding(.top, 15)
+                .background(BlurBG(settings: settings))
+                .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
+                .edgesIgnoringSafeArea(.top)
             
             Spacer()
         }
@@ -2011,5 +1843,63 @@ struct BlurBG : UIViewRepresentable {
     
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
         
+    }
+}
+
+struct ZoomingImage: View {
+    @Binding var viewerShown: Bool
+    @Binding var image: UIImage
+    var aspectRatio: Binding<CGFloat>?
+    @State var dragOffset: CGSize = CGSize(width: -504, height: -579)
+    @State var dragOffsetPredicted: CGSize = CGSize(width: -504, height: -579)
+    @Binding var blurValue: Double
+    
+    var body: some View {
+        if viewerShown {
+            ZStack {
+                VStack {
+                    Spacer()
+                    
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(self.aspectRatio?.wrappedValue, contentMode: .fit)
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35)
+                        .offset(x: self.dragOffset.width, y: self.dragOffset.height)
+                        .rotationEffect(.init(degrees: Double(self.dragOffset.width / 30)))
+                    
+                    Spacer()
+                }
+                .pinchToZoom()
+                .gesture(DragGesture()
+                            .onChanged { value in
+                    self.dragOffset = value.translation
+                    self.dragOffsetPredicted = value.predictedEndTranslation
+                }
+                            .onEnded { value in
+                    if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
+                        withAnimation(.spring()) {
+                            self.dragOffset = self.dragOffsetPredicted
+                            print(self.dragOffsetPredicted)
+                        }
+                        self.viewerShown = false
+                        
+                        return
+                    }
+                    withAnimation(.interactiveSpring()) {
+                        self.dragOffset = .zero
+                    }
+                }
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onChange(of: self.dragOffset, perform: { newValue in
+                blurValue = 15 - Double(abs(newValue.width) + abs(newValue.height)) / 40
+            })
+            .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.2)))
+            .onAppear() {
+                self.dragOffset = .zero
+                self.dragOffsetPredicted = .zero
+            }
+        }
     }
 }
