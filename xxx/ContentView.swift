@@ -421,11 +421,11 @@ public struct PlaceholderStyle: ViewModifier {
             
             content
                 .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
-                .padding(.leading, UIScreen.main.bounds.width*0.05)
+//                .padding(.leading, UIScreen.main.bounds.width*0.088)
+                .padding(.leading, 52.5) // Разобраться с отступами для ввода на разных размерах экрана
         }
     }
-}
-
+} // Отступы разных размеров экрана
 
 struct mapContents: Hashable {
     var name: String = String()
@@ -878,10 +878,13 @@ struct entryField: View {
             
             Spacer()
             
+            LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd)
+                .mask(
             Image(systemName: "chevron.down")
                 .resizable()
                 .foregroundColor(settings.theme == 0 ? Color.lightEnd : Color.purpleEnd)
                 .frame(width: UIScreen.main.bounds.width*0.9/2.5, height: UIScreen.main.bounds.height / 4.5 / 10)
+            )
             
             Spacer()
             
@@ -1256,6 +1259,7 @@ struct CardView: View {
     var isFaceUp: Bool
     var imageName: [String]
     var color: LinearGradient
+    @State var source: String = ""
     
     var body: some View {
         RoundedRectangle(cornerRadius: 25)
@@ -1286,6 +1290,35 @@ struct CardView: View {
                             Spacer()
                                 .frame(width: geometry.size.width/5)
                         }
+                    } else {
+                        HStack {
+                            Spacer()
+                            
+                            TextField("", text: $source)
+                                .modifier(
+                                    PlaceholderStyle(
+                                        showPlaceHolder: source.isEmpty,
+                                        placeholder: "Начальный кабинет",
+                                        center: true,
+                                        settings: settings
+                                    )
+                                )
+                            
+                            Spacer()
+                            
+                            Button(action: {}) {
+                                
+                                Image(systemName: "magnifyingglass")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                    .padding(.horizontal, 30)
+                            }
+                            .animation(nil)
+                            .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
+                            
+                        }
+                        .cardFlip(isFaceUp: false)
                     }
                 }
             )
@@ -1513,6 +1546,7 @@ struct Navigation: View {
                                 .fontWeight(.semibold)
                         }
                     }
+                    .padding(.top, 5)
                     //                    Spacer()
                     //
                     //                    Advert()
