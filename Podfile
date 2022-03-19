@@ -10,9 +10,5 @@ target 'xxx' do
 pod 'SVGKit', :git => 'https://github.com/SVGKit/SVGKit.git', :branch => '3.x'
 pod 'SwiftGraph', :git => 'https://github.com/davecom/SwiftGraph.git' 
 pod 'PocketSVG', :git => 'https://github.com/pocketsvg/PocketSVG.git'
-pod 'MaterialComponents/TextControls+FilledTextAreas'
-pod 'MaterialComponents/TextControls+FilledTextFields'
-pod 'MaterialComponents/TextControls+OutlinedTextAreas'
-pod 'MaterialComponents/TextControls+OutlinedTextFields'
 
 end

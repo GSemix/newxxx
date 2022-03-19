@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		9382D7C827DA391B001E5F5A /* UserDefaultsSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */; };
-		938A26E527DEA8020082BD17 /* ImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = 938A26E427DEA8020082BD17 /* ImageViewer */; };
-		938A26E727DEA8030082BD17 /* ImageViewerRemote in Frameworks */ = {isa = PBXBuildFile; productRef = 938A26E627DEA8020082BD17 /* ImageViewerRemote */; };
 		93F5420C279C5750000B175D /* xxxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420B279C5750000B175D /* xxxApp.swift */; };
 		93F5420E279C5750000B175D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420D279C5750000B175D /* ContentView.swift */; };
 		93F54210279C5751000B175D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93F5420F279C5751000B175D /* Assets.xcassets */; };
@@ -38,9 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				938A26E527DEA8020082BD17 /* ImageViewer in Frameworks */,
 				F08762421A78EBBF58CFBC8B /* Pods_xxx.framework in Frameworks */,
-				938A26E727DEA8030082BD17 /* ImageViewerRemote in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,8 +119,6 @@
 			);
 			name = xxx;
 			packageProductDependencies = (
-				938A26E427DEA8020082BD17 /* ImageViewer */,
-				938A26E627DEA8020082BD17 /* ImageViewerRemote */,
 			);
 			productName = xxx;
 			productReference = 93F54208279C5750000B175D /* xxx.app */;
@@ -155,7 +149,6 @@
 			);
 			mainGroup = 93F541FF279C5750000B175D;
 			packageReferences = (
-				938A26E327DEA7F20082BD17 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */,
 			);
 			productRefGroup = 93F54209279C5750000B175D /* Products */;
 			projectDirPath = "";
@@ -367,8 +360,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -378,7 +372,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -397,8 +391,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -408,7 +403,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -434,30 +429,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		938A26E327DEA7F20082BD17 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Jake-Short/swiftui-image-viewer.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		938A26E427DEA8020082BD17 /* ImageViewer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 938A26E327DEA7F20082BD17 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */;
-			productName = ImageViewer;
-		};
-		938A26E627DEA8020082BD17 /* ImageViewerRemote */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 938A26E327DEA7F20082BD17 /* XCRemoteSwiftPackageReference "swiftui-image-viewer" */;
-			productName = ImageViewerRemote;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 93F54200279C5750000B175D /* Project object */;
 }

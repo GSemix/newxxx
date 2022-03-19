@@ -2,73 +2,12 @@ PODS:
   - CocoaLumberjack (3.7.2):
     - CocoaLumberjack/Core (= 3.7.2)
   - CocoaLumberjack/Core (3.7.2)
-  - MaterialComponents/AnimationTiming (124.2.0)
-  - MaterialComponents/Availability (124.2.0)
-  - MaterialComponents/private/Math (124.2.0)
-  - "MaterialComponents/private/TextControlsPrivate+BaseStyle (124.2.0)":
-    - MaterialComponents/AnimationTiming
-    - MaterialComponents/private/Math
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-  - "MaterialComponents/private/TextControlsPrivate+FilledStyle (124.2.0)":
-    - MaterialComponents/AnimationTiming
-    - MaterialComponents/Availability
-    - MaterialComponents/private/Math
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-    - "MaterialComponents/private/TextControlsPrivate+UnderlinedStyle"
-  - "MaterialComponents/private/TextControlsPrivate+OutlinedStyle (124.2.0)":
-    - MaterialComponents/AnimationTiming
-    - MaterialComponents/Availability
-    - MaterialComponents/private/Math
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-  - "MaterialComponents/private/TextControlsPrivate+Shared (124.2.0)":
-    - MaterialComponents/AnimationTiming
-    - MaterialComponents/private/Math
-    - "MaterialComponents/TextControls+Enums"
-  - "MaterialComponents/private/TextControlsPrivate+TextFields (124.2.0)":
-    - MaterialComponents/private/Math
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-  - "MaterialComponents/private/TextControlsPrivate+UnderlinedStyle (124.2.0)":
-    - MaterialComponents/AnimationTiming
-    - MaterialComponents/Availability
-    - MaterialComponents/private/Math
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-  - "MaterialComponents/TextControls+BaseTextAreas (124.2.0)":
-    - "MaterialComponents/private/TextControlsPrivate+BaseStyle"
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-    - MDFInternationalization
-  - "MaterialComponents/TextControls+BaseTextFields (124.2.0)":
-    - "MaterialComponents/private/TextControlsPrivate+BaseStyle"
-    - "MaterialComponents/private/TextControlsPrivate+Shared"
-    - "MaterialComponents/private/TextControlsPrivate+TextFields"
-    - MDFInternationalization
-  - "MaterialComponents/TextControls+Enums (124.2.0)"
-  - "MaterialComponents/TextControls+FilledTextAreas (124.2.0)":
-    - MaterialComponents/Availability
-    - "MaterialComponents/private/TextControlsPrivate+FilledStyle"
-    - "MaterialComponents/TextControls+BaseTextAreas"
-  - "MaterialComponents/TextControls+FilledTextFields (124.2.0)":
-    - MaterialComponents/Availability
-    - "MaterialComponents/private/TextControlsPrivate+FilledStyle"
-    - "MaterialComponents/TextControls+BaseTextFields"
-  - "MaterialComponents/TextControls+OutlinedTextAreas (124.2.0)":
-    - MaterialComponents/Availability
-    - "MaterialComponents/private/TextControlsPrivate+OutlinedStyle"
-    - "MaterialComponents/TextControls+BaseTextAreas"
-  - "MaterialComponents/TextControls+OutlinedTextFields (124.2.0)":
-    - MaterialComponents/Availability
-    - "MaterialComponents/private/TextControlsPrivate+OutlinedStyle"
-    - "MaterialComponents/TextControls+BaseTextFields"
-  - MDFInternationalization (3.0.0)
   - PocketSVG (2.7.2)
   - SVGKit (3.1.0):
     - CocoaLumberjack (~> 3.0)
   - SwiftGraph (3.1)
 
 DEPENDENCIES:
-  - "MaterialComponents/TextControls+FilledTextAreas"
-  - "MaterialComponents/TextControls+FilledTextFields"
-  - "MaterialComponents/TextControls+OutlinedTextAreas"
-  - "MaterialComponents/TextControls+OutlinedTextFields"
   - PocketSVG (from `https://github.com/pocketsvg/PocketSVG.git`)
   - SVGKit (from `https://github.com/SVGKit/SVGKit.git`, branch `3.x`)
   - SwiftGraph (from `https://github.com/davecom/SwiftGraph.git`)
@@ -76,8 +15,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - CocoaLumberjack
-    - MaterialComponents
-    - MDFInternationalization
 
 EXTERNAL SOURCES:
   PocketSVG:
@@ -101,12 +38,10 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  MaterialComponents: 1a9b2d9d45b1601ae544de85089adc4c464306d4
-  MDFInternationalization: d697c55307816222a55685c4ccb1044ffb030c12
   PocketSVG: c597e6916641fd2674d2f0cabca0d1869cb82880
   SVGKit: 3c8468aab0026048532a3b27a0c81cdd939f0649
   SwiftGraph: f97852fc9372815b71426cd38baf2609a8a92f76
 
-PODFILE CHECKSUM: d7efd51b2640965feaba32ccfe11b2174f834f06
+PODFILE CHECKSUM: d0c3d12503480b52df5e6cf350238f517e735f27
 
 COCOAPODS: 1.11.2

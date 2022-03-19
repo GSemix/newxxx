@@ -11,11 +11,6 @@ import SVGKit
 import SwiftUI
 import SwiftGraph
 import PocketSVG
-import MaterialComponents.MaterialTextControls_FilledTextAreas
-import MaterialComponents.MaterialTextControls_FilledTextFields
-import MaterialComponents.MaterialTextControls_OutlinedTextAreas
-import MaterialComponents.MaterialTextControls_OutlinedTextFields
-//import ImageViewer
 
 // --------------------------------
 
@@ -37,7 +32,7 @@ struct ColorfulButtonStyleRoundedRectangle: ButtonStyle {
     
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
-            .foregroundColor(settings.theme == 0 ? configuration.isPressed ? .darkEnd  : .lightStart : configuration.isPressed ? .offWhite : .purpleEnd)
+            .foregroundColor(settings.theme == 0 ? configuration.isPressed ? .darkEnd  : .offWhite : configuration.isPressed ? .offWhite : .purpleEnd)
             .padding(20)
             .frame(alignment: .center)
             .contentShape(RoundedRectangle(cornerRadius: 15))
@@ -606,7 +601,6 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
 
 struct navigationPage: View {
     @Binding var maps: Dictionary<Int, mapContents>
-    @State var blurMap: Bool = false
     @State var image: UIImage = UIImage()
     @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
@@ -663,7 +657,8 @@ struct navigationPage: View {
                                 maps.removeAll()
                                 zIndexValue = false
                                 image = UIImage()
-                                blurMap = false
+                                blurValue = 0
+                                showImageViewer = false
                                 viewRouter.currentPage = .navigation
                             }
                         }) {
@@ -746,7 +741,7 @@ struct Map: View {
                 Firefly(color: settings.theme == 0 ? Color.lightStart : Color.purpleStart)
                 
                 Text(text)
-                    .foregroundColor(Color.white)
+                    .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
             }
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
@@ -1253,78 +1248,6 @@ enum Positions {
     case showTitle
 }
 
-struct CardView: View {
-    @ObservedObject var settings: UserDefaultsSettings
-    var geometry: GeometryProxy
-    var isFaceUp: Bool
-    var imageName: [String]
-    var color: LinearGradient
-    @State var source: String = ""
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 25)
-            .fill(LinearGradient(settings.theme == 0 ? Color.darkEnd : Color.offWhite, settings.theme == 0 ? Color.darkStart : Color.offWhite))
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: isFaceUp ? -5 : 5, y: -5)
-            .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: isFaceUp ? 5 : -5, y: 5)
-            .padding(.vertical, 30)
-            .overlay(
-                ZStack {
-                    if isFaceUp {
-                        HStack {
-                            Spacer()
-                                .frame(width: geometry.size.width/5)
-                            
-                            ForEach(0..<imageName.count) { name in
-                                color
-                                    .mask(
-                                        Image(systemName: imageName[name])
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: geometry.size.width*0.3, height: geometry.size.height/4)
-                                            .opacity(0.8)
-                                            .animation(nil)
-                                    )
-                            }
-                            
-                            Spacer()
-                                .frame(width: geometry.size.width/5)
-                        }
-                    } else {
-                        HStack {
-                            Spacer()
-                            
-                            TextField("", text: $source)
-                                .modifier(
-                                    PlaceholderStyle(
-                                        showPlaceHolder: source.isEmpty,
-                                        placeholder: "Начальный кабинет",
-                                        center: true,
-                                        settings: settings
-                                    )
-                                )
-                            
-                            Spacer()
-                            
-                            Button(action: {}) {
-                                
-                                Image(systemName: "magnifyingglass")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
-                                    .padding(.horizontal, 30)
-                            }
-                            .animation(nil)
-                            .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
-                            
-                        }
-                        .cardFlip(isFaceUp: false)
-                    }
-                }
-            )
-    }
-}
-
 struct CardFlip: ViewModifier {
     var isFaceUp: Bool
     
@@ -1340,9 +1263,125 @@ struct CardFlip: ViewModifier {
 
 struct fastCard: Identifiable {
     var id: UUID = UUID()
-    var isFaceUp: Bool = true
+    var isFaceUp: Bool = false
     var images: [String]
     var color: LinearGradient
+    var name: String
+}
+
+struct FlipEffect: GeometryEffect {
+
+      var animatableData: Double {
+            get { angle }
+            set { angle = newValue }
+      }
+
+      @Binding var flipped: Bool
+      var angle: Double
+      let axis: (x: CGFloat, y: CGFloat)
+
+      func effectValue(size: CGSize) -> ProjectionTransform {
+
+            DispatchQueue.main.async {
+                  self.flipped = self.angle >= 90 && self.angle < 270
+            }
+
+            let tweakedAngle = flipped ? -180 + angle : angle
+            let a = CGFloat(Angle(degrees: tweakedAngle).radians)
+
+            var transform3d = CATransform3DIdentity;
+            transform3d.m34 = -1/max(size.width, size.height)
+
+            transform3d = CATransform3DRotate(transform3d, a, axis.x, axis.y, 0)
+            transform3d = CATransform3DTranslate(transform3d, -size.width/2.0, -size.height/2.0, 0)
+
+            let affineTransform = ProjectionTransform(CGAffineTransform(translationX: size.width/2.0, y: size.height / 2.0))
+
+            return ProjectionTransform(transform3d).concatenating(affineTransform)
+      }
+}
+
+struct FlipView: View {
+    @State private var flipped = false
+    var showBack : Bool
+    @ObservedObject var settings: UserDefaultsSettings
+    var geometry: GeometryProxy
+    var imageName: [String]
+    var color: LinearGradient
+    @State var text: String = ""
+    @Binding var fastCab: String
+    @Binding var typeCard: String
+    var name: String
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 25)
+            .fill(LinearGradient(settings.theme == 0 ? Color.darkEnd : Color.offWhite, settings.theme == 0 ? Color.darkStart : Color.offWhite))
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: -5, y: -5)
+            .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: 5, y: 5)
+            .padding(.vertical, 30)
+            .overlay(
+                ZStack {
+                    HStack {
+                        Spacer()
+                            .frame(width: geometry.size.width/5)
+                        
+                        ForEach(0..<imageName.count) { name in
+                            color
+                                .mask(
+                                    Image(systemName: imageName[name])
+                                        .resizable()
+                                        .scaledToFill()
+                                        .foregroundColor(.black)
+                                        .frame(width: geometry.size.width*0.3, height: geometry.size.height/4)
+                                        .opacity(0.8)
+                                )
+                        }
+                        
+                        Spacer()
+                            .frame(width: geometry.size.width/5)
+                    }
+                    .opacity(flipped ? 0.0 : 1.0)
+                    
+                    HStack {
+                        Spacer()
+                        
+                        TextField("", text: $text)
+                            .modifier(
+                                PlaceholderStyle(
+                                    showPlaceHolder: text.isEmpty,
+                                    placeholder: "Начальный кабинет",
+                                    center: true,
+                                    settings: settings
+                                )
+                            )
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            self.fastCab = self.text
+                            self.typeCard = name
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                .padding(.horizontal, 30)
+                        }
+//                        .animation(nil)
+                        .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
+                    }
+                    .opacity(flipped ? 1.0 : 0.0)
+                }
+            )
+            .onChange(of: flipped) { newValue in
+                if !newValue {
+                    self.text = ""
+                    self.fastCab = ""
+                }
+            }
+            .modifier(FlipEffect(flipped: $flipped, angle: showBack ? 180 : 0, axis: (x: 0, y: 1)))
+    }
 }
 
 struct Navigation: View {
@@ -1369,14 +1408,17 @@ struct Navigation: View {
     @State var show = false
     @ObservedObject var settings: UserDefaultsSettings
     @State var Cards: [fastCard] = [
-        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown)),
-        .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray)),
-        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart)),
-        .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2))),
-        .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray))
+        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
+        .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "Кафе"),
+        
+        .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "Мед пункт"),
+        .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
+        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart), name: "Туалет")
     ]
     @State var errorType: errorSignal = .nothing
     @Binding var isBookmark: Bool
+    @State var fastCab: String = ""
+    @State var typeCard: String = ""
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -1391,7 +1433,6 @@ struct Navigation: View {
                             let y = g.frame(in: .global).minY
                             
                             if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
-                                
                                 withAnimation{
                                     self.show = true
                                 }
@@ -1456,21 +1497,23 @@ struct Navigation: View {
                             HStack(spacing: -30) {
                                 ForEach(Cards.indices) { index in
                                     GeometryReader { gg in
-                                        CardView(settings: settings, geometry: gg, isFaceUp: self.Cards[index].isFaceUp, imageName: self.Cards[index].images, color: self.Cards[index].color)
-                                            .cardFlip(isFaceUp: self.Cards[index].isFaceUp)
-                                            .animation(.spring())
+                                        FlipView(showBack: self.Cards[index].isFaceUp, settings: settings, geometry: gg, imageName: self.Cards[index].images, color: self.Cards[index].color, fastCab: $fastCab, typeCard: $typeCard, name: self.Cards[index].name)
                                             .onTapGesture {
-                                                if Cards[index].isFaceUp {
+                                                if !Cards[index].isFaceUp {
                                                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
                                                         value.scrollTo(index, anchor: .center)
                                                     }
                                                 }
                                                 
-                                                self.Cards[index].isFaceUp.toggle()
-                                                
-                                                for i in 0..<Cards.count {
-                                                    if i != index {
-                                                        self.Cards[i].isFaceUp = true
+                                                withAnimation(.linear(duration: 0.2)) {
+                                                    if !self.Cards[index].isFaceUp {
+                                                        self.Cards[index].isFaceUp.toggle()
+                                                    }
+                                                    
+                                                    for i in 0..<Cards.count {
+                                                        if i != index {
+                                                            self.Cards[i].isFaceUp = false
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1479,7 +1522,11 @@ struct Navigation: View {
                                     .id(index)
                                     .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
                                     .padding(.bottom, 50)
+//                                    .padding(.top, 25)
                                     .padding(.horizontal)
+                                }
+                                .onChange(of: fastCab) { newValue in
+                                    searchShortestWay(source: newValue, destinationList: searchDestinationPoint(type: typeCard))
                                 }
                             }
                             .onAppear(perform: {
@@ -1573,8 +1620,57 @@ struct Navigation: View {
         })
     }
     
+    func searchShortestWay(source: String, destinationList: [String]) {
+        if destinationList.isEmpty {
+            print("Неизвестный тип")
+        } else {
+            var bestCommonFriend: [UnweightedEdge] = []
+            var destinationName: String = ""
+            
+            for x in destinationList {
+                let commonFriend: [UnweightedEdge] = cityGraph.bfs(from: find(p: source), to: find(p: x))
+                
+                if x == destinationList[0] {
+                    bestCommonFriend = commonFriend
+                     destinationName = x
+                } else {
+                    if commonFriend.count < bestCommonFriend.count {
+                       bestCommonFriend = commonFriend
+                        destinationName = x
+                    }
+                }
+            }
+            
+            if !bestCommonFriend.isEmpty {
+                commonFriend = bestCommonFriend
+                
+                s = parse(way: commonFriend.description)
+                sPoint = s.map {Vertex[Int($0)!].name}
+                paint = getLines()
+                
+                for x in 0...paint.count - 1 where x % 3 == 0 {
+                    maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [source, destinationName]), forKey: x / 3)
+                }
+                
+                self.isBookmark = self.settings.selectedMaps.contains("\(source) \(destinationName)")
+                viewRouter.currentPage = .maps
+            }
+        }
+    }
+    
+    func searchDestinationPoint(type: String) -> [String] {
+        var listDestinattionPoint: [String] = []
+        
+        for x in Vertex {
+            if x.name.contains(type) {
+                listDestinattionPoint.append(x.name)
+            }
+        }
+        
+        return listDestinattionPoint
+    }
+    
     func makeRouteFast(first: String, last: String) {
-        errorType = .nothing
         commonFriend = cityGraph.bfs(from: find(p: first), to: find(p: last))
         self.isBookmark = true
         
@@ -1585,8 +1681,6 @@ struct Navigation: View {
         for x in 0...paint.count - 1 where x % 3 == 0 {
             maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [first, last]), forKey: x / 3)
         }
-        
-        errorInput = ""
         
         viewRouter.currentPage = .maps
     }
@@ -1666,7 +1760,7 @@ struct Navigation: View {
                     cityGraph = UnweightedGraph<Point>(vertices: Vertex)
                 }
             } catch {
-                print("qwe")
+                print("Error in function -> Start (print 1)")
             }
             
             url = URL(fileURLWithPath: Bundle.main.path(forResource: "Data/Edges" , ofType: "json")!)
@@ -1682,7 +1776,7 @@ struct Navigation: View {
                     }
                 }
             } catch {
-                print("qwe")
+                print("Error in function -> Start (print 2)")
             }
             
             complete = true
@@ -1759,7 +1853,7 @@ struct Navigation: View {
         contentsSVG = appendLinesToSVG(xmlString: contentsSVG!, linesCode: linesCode)
         
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let toURL = dir!.appendingPathComponent("B2" + ".svg")
+        let toURL = dir!.appendingPathComponent(resource.split(separator: "/").map {String($0)}.last! + ".svg")
         
         do {
             try contentsSVG!.write(to: toURL, atomically: false, encoding: .utf8)
@@ -1783,6 +1877,27 @@ struct Navigation: View {
     
     func appendLinesToSVG (xmlString: String, linesCode: String) -> String { // $$$
         var xml = xmlString.components(separatedBy: "\n")
+        var Colors: String = ""
+        
+        if self.settings.theme == 0 {
+            Colors = """
+            .st0{fill:#e1e1eb;}
+            .st1{fill:#e1e1eb;}
+            .st8{fill:none;stroke:#3CA0F0;stroke-width:10;stroke-miterlimit:10;}
+            .st9{fill:#3CA0F0;}
+        """
+        } else if self.settings.theme == 1 {
+            Colors = """
+            .st0{fill:#323c41;}
+            .st1{fill:#323c41;}
+            .st8{fill:none;stroke:#6300EE;stroke-width:10;stroke-miterlimit:10;}
+            .st9{fill:#6300EE;}
+        """
+        }
+        
+        xml.insert("""
+        \(Colors)
+        """, at: 5)
         
         xml.insert("""
         \(linesCode)
@@ -1913,7 +2028,6 @@ struct ZoomingImage: View {
                     if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
                         withAnimation(.spring()) {
                             self.dragOffset = self.dragOffsetPredicted
-                            print(self.dragOffsetPredicted)
                         }
                         self.viewerShown = false
                         
