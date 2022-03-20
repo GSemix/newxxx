@@ -1482,7 +1482,7 @@ struct Navigation: View {
                             }
                             
                         }
-                        .padding(.top, UIScreen.main.bounds.height*0.08)
+                        .padding(.top, UIScreen.main.bounds.height*0.07)
 //                        .padding(.bottom, UIScreen.main.bounds.height*0.04)
                         
                 }
@@ -1996,7 +1996,7 @@ struct dataList: View {
                             }
                             
                         }
-                        .padding(.top, UIScreen.main.bounds.height*0.08)
+                        .padding(.top, UIScreen.main.bounds.height*0.07)
                 }
                 .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.15, alignment: .center)
                 
