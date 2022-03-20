@@ -179,8 +179,8 @@ extension Binding {
 }
 
 extension View {
-    public func pinchToZoom() -> some View {
-        self.modifier(PinchToZoom())
+    public func pinchToZoom(theme: Int) -> some View {
+        self.modifier(PinchToZoom(theme: theme))
     }
     
     public func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
@@ -377,12 +377,16 @@ struct PinchToZoom: ViewModifier {
     @State var anchor: UnitPoint = .center
     @State var offset: CGSize = .zero
     @State var isPinching: Bool = false
+    var theme: Int
     
     func body(content: Content) -> some View {
         content
+            .background(scale != 1.0 ? theme == 0 ? Color.darkStart.opacity(0.97) : Color.offWhite.opacity(0.97) : Color.clear)
+            .cornerRadius(15)
             .scaleEffect(scale, anchor: anchor)
             .offset(offset)
             .overlay(PinchZoom(scale: $scale, anchor: $anchor, offset: $offset, isPinching: $isPinching))
+            .zIndex(scale != 1.0 ? 1000 : 0)
     }
 }
 
@@ -403,6 +407,7 @@ public struct PlaceholderStyle: ViewModifier {
     var placeholder: String
     var center: Bool
     @ObservedObject var settings: UserDefaultsSettings
+//    var paddingValue: CGFloat = .zero
     
     public func body(content: Content) -> some View {
         ZStack(alignment: center ? .center : .leading) {
@@ -417,7 +422,7 @@ public struct PlaceholderStyle: ViewModifier {
             content
                 .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
 //                .padding(.leading, UIScreen.main.bounds.width*0.088)
-                .padding(.leading, 52.5) // Разобраться с отступами для ввода на разных размерах экрана
+//                .padding(.leading, paddingValue) // Разобраться с отступами для ввода на разных размерах экрана
         }
     }
 } // Отступы разных размеров экрана
@@ -544,26 +549,31 @@ struct TabBarIconNew: View {
     }
 }
 
-struct ZoomableScrollView<Content: View>: UIViewRepresentable {
+struct Zoom<Content: View>: UIViewRepresentable {
+    
+    @Binding var zoomScale: Double
     private var content: Content
     
-    init(@ViewBuilder content: () -> Content) {
-        
+    init(zoomScale: Binding<Double>, @ViewBuilder content: () -> Content) {
+        self._zoomScale = zoomScale
         self.content = content()
     }
     
+    static func dismantleUIView(_ uiView: UIScrollView, coordinator: Coordinator) {
+            uiView.delegate = nil
+            coordinator.hostingController.view = nil
+        }
+    
     func makeUIView(context: Context) -> UIScrollView {
         
-        // set up the UIScrollView
         let scrollView = UIScrollView()
-        scrollView.delegate = context.coordinator  // for viewForZooming(in:)
+        scrollView.delegate = context.coordinator
         scrollView.maximumZoomScale = 4
         scrollView.minimumZoomScale = 1
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.bouncesZoom = true
         
-        // create a UIHostingController to hold our SwiftUI content
         let hostedView = context.coordinator.hostingController.view!
         hostedView.translatesAutoresizingMaskIntoConstraints = true
         hostedView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -575,132 +585,160 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(hostingController: UIHostingController(rootView: self.content))
+        return Coordinator(hostingController: UIHostingController(rootView: self.content), parent: self)
     }
     
     func updateUIView(_ uiView: UIScrollView, context: Context) {
-        // update the hosting controller's SwiftUI content
         context.coordinator.hostingController.rootView = self.content
         assert(context.coordinator.hostingController.view.superview == uiView)
+        // enable zoomScale reset, as a downside this is being set on each scrollViewDidZoom call
+        uiView.zoomScale = zoomScale
+        uiView.showsVerticalScrollIndicator = zoomScale == 1.0 ? false : true
+        uiView.showsHorizontalScrollIndicator = zoomScale == 1.0 ? false : true
     }
-    
-    // MARK: - Coordinator
     
     class Coordinator: NSObject, UIScrollViewDelegate {
         var hostingController: UIHostingController<Content>
+        var parent: Zoom
         
-        init(hostingController: UIHostingController<Content>) {
+        init(hostingController: UIHostingController<Content>, parent: Zoom) {
             self.hostingController = hostingController
+            self.parent = parent
+            
         }
         
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return hostingController.view
         }
+        
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            let zoomScale = scrollView.zoomScale
+            
+            if zoomScale < 1.0 {
+                parent.zoomScale = 1.0
+            }
+            else if zoomScale > 1.0 {
+                // fix for "Modifying state during view update, this will cause undefined behavior."
+                // if we reset zoomScale to 1.0
+                parent.zoomScale = zoomScale
+            }
+
+        }
     }
-} // Херня, которая постоянно крашится и нихера не сбарсывает настройки
+}
 
 struct navigationPage: View {
     @Binding var maps: Dictionary<Int, mapContents>
     @State var image: UIImage = UIImage()
-    @State var zIndexValue: Bool = false
     @StateObject var viewRouter: ViewRouter
     @Binding var bookmark: Bool
     @ObservedObject var settings: UserDefaultsSettings
     @State var showImageViewer: Bool = false
     @State var blurValue: Double = 0
+    @State var zoomScale: Double = 1.0
     
     var body: some View {
         ZStack(alignment: .top) {
-            ZStack {
                 ScrollView(.vertical, showsIndicators: false) {
-                    Spacer()
-                        .frame(height: UIScreen.main.bounds.height*0.1)
-                    
                     ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                        VStack{
-                            Map(settings: settings, image: maps[map]!.image, text: maps[map]!.text)
+                        Image(uiImage: maps[map]!.image)
+                            .resizable()
+                            .scaledToFit()
+                        
+                        Image(uiImage: maps[map]!.image)
+                            .resizable()
+                            .scaledToFit()
+                        Image(uiImage: maps[map]!.image)
+                            .resizable()
+                            .scaledToFit()
+                        Image(uiImage: maps[map]!.image)
+                            .resizable()
+                            .scaledToFit()
+                        
+                            piceOfMap(settings: settings, image: maps[map]!.image)
                                 .onTapGesture(count: 1) {
                                     image = maps[map]!.image
                                     withAnimation(.interactiveSpring()) {
                                         showImageViewer = true
                                     }
                                 }
-                        }
+                            
+                            Explanation(settings: settings, text: maps[map]!.text)
+                                .padding(.vertical, 5)
                     }
                     
                     Spacer()
-                        .frame(height: UIScreen.main.bounds.height*0.08)
+                        .frame(height: UIScreen.main.bounds.height*0.15)
                 }
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .frame(maxHeight: .infinity)
                 .blur(radius: blurValue)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay(ZoomingImage(viewerShown: self.$showImageViewer, image: self.$image, blurValue: self.$blurValue))
-            .onChange(of: showImageViewer, perform: { newValue in
-                if !newValue {
-                    image = UIImage()
-                    blurValue = 0
-                } else {
-                    blurValue = 15
-                }
-            })
-            .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
-            .edgesIgnoringSafeArea(.bottom)
-            
-            ZStack(alignment: .top) {
-                header(settings: settings, text: "Маршрут")
-                VStack {
-                    HStack {
-                        Button(action: {
-                            withAnimation {
-                                clearSVG()
-                                maps.removeAll()
-                                zIndexValue = false
-                                image = UIImage()
-                                blurValue = 0
-                                showImageViewer = false
-                                viewRouter.currentPage = .navigation
-                            }
-                        }) {
-                            Image(systemName: "arrow.uturn.backward")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
-                                .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
-                                .padding(15)
-                                .clipShape(Capsule())
+                .disabled(showImageViewer)
+                .overlay(ZoomingImage(viewerShown: self.$showImageViewer, image: self.$image, blurValue: self.$blurValue, zoomScale: self.$zoomScale))
+                .onChange(of: showImageViewer, perform: { newValue in
+                    withAnimation(.interactiveSpring()) {
+                        if !newValue {
+                            blurValue = 0
+                            zoomScale = 1.0
+                        } else {
+                            blurValue = 15
                         }
-                        .frame(width: 50, height: 50)
-                        
-                        Spacer()
-                        
-                        Toggle(isOn: $bookmark.didSet { _ in
-                            if bookmark {
-                                if !self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                    self.settings.selectedMaps.append(self.maps[0]!.way.joined(separator: " "))
-                                }
-                            } else {
-                                if self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                    self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: self.maps[0]!.way.joined(separator: " "))!)
-                                }
-                            }
-                        }
-                        ) {
-                            Image(systemName: self.bookmark ? "bookmark.fill" : "bookmark")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
-                                .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
-                        }
-                        .frame(width: 50, height: 50)
-                        .toggleStyle(ImageToggle())
                     }
-                    .padding(.horizontal, 30)
-                    
-                    Spacer()
+                })
+                .safeAreaInset(edge: .top) {
+                    ZStack {
+                        header(settings: settings, text: "Маршрут")
+                            HStack {
+                                Button(action: {
+                                    withAnimation {
+                                        clearSVG()
+                                        maps.removeAll()
+                                        image = UIImage()
+                                        blurValue = 0
+                                        showImageViewer = false
+                                        viewRouter.currentPage = .navigation
+                                    }
+                                }) {
+                                    Image(systemName: "arrow.uturn.backward")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
+                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                        .padding(15)
+                                        .clipShape(Capsule())
+                                }
+                                .frame(width: 50, height: 50)
+                                
+                                Spacer()
+                                
+                                Toggle(isOn: $bookmark.didSet { _ in
+                                    if bookmark {
+                                        if !self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
+                                            self.settings.selectedMaps.append(self.maps[0]!.way.joined(separator: " "))
+                                        }
+                                    } else {
+                                        if self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
+                                            self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: self.maps[0]!.way.joined(separator: " "))!)
+                                        }
+                                    }
+                                }
+                                ) {
+                                    Image(systemName: self.bookmark ? "bookmark.fill" : "bookmark")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
+                                        .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
+                                }
+                                .frame(width: 50, height: 50)
+                                .toggleStyle(ImageToggle())
+                            }
+                            .padding(.horizontal, 30)
+                            .padding(.top, UIScreen.main.bounds.height*0.05)
+                            .padding(.bottom, UIScreen.main.bounds.height*0.01)
+                    }
                 }
-                
-            }
+                .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
+                .edgesIgnoringSafeArea(.bottom)
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
@@ -721,31 +759,34 @@ struct ContentView_Previews: PreviewProvider {
     }
 }
 
-struct Map: View {
+struct Explanation: View {
     @ObservedObject var settings: UserDefaultsSettings
-    var image: UIImage
     var text: String
     
     var body: some View {
-        VStack {
-            VStack {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)
-            }
-            .frame(height: UIScreen.main.bounds.height*0.3)
-            .addBorder(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), width: 2, cornerRadius: 15)
+        HStack {
+            Firefly(color: settings.theme == 0 ? Color.lightStart : Color.purpleStart)
             
-            HStack {
-                Firefly(color: settings.theme == 0 ? Color.lightStart : Color.purpleStart)
-                
-                Text(text)
-                    .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
-            }
+            Text(text)
+                .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
         }
-        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35, alignment: .center)
-        .padding(.vertical, 5)
+    }
+}
+
+struct piceOfMap: View {
+    @ObservedObject var settings: UserDefaultsSettings
+    var image: UIImage
+    
+    var body: some View {
+        VStack {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)
+        }
+        .frame(height: UIScreen.main.bounds.height*0.3)
+        .addBorder(LinearGradient(settings.theme == 0 ? Color.lightStart : Color.purpleStart, settings.theme == 0 ? Color.lightEnd : Color.purpleEnd), width: 2, cornerRadius: 15)
+        .pinchToZoom(theme: settings.theme)
     }
 }
 
@@ -852,6 +893,7 @@ struct entryField: View {
                         placeholder: "Начальный кабинет",
                         center: true,
                         settings: settings
+//                        paddingValue: -labelSize(for: "Начальный кабинет").width / 2
                     )
                 )
                 .onChange(of: sourse) { newValue in
@@ -866,7 +908,6 @@ struct entryField: View {
                     }
                 }
                 .textContentType(.dateTime)
-                .cornerRadius(10)
                 .frame(height: 50)
                 .multilineTextAlignment(.leading)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .start || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
@@ -890,6 +931,7 @@ struct entryField: View {
                         placeholder: "Конечный кабинет",
                         center: true,
                         settings: settings
+//                        paddingValue: -labelSize(for: "Конечный кабинет").width / 2
                     )
                 )
                 .onChange(of: destination) { newValue in
@@ -903,13 +945,26 @@ struct entryField: View {
                         errorType = .nothing
                     }
                 }
-                .cornerRadius(10)
                 .frame(height: 50)
                 .multilineTextAlignment(.leading)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .end || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
             Spacer()
         }
+    }
+    
+    func labelSize(for text: String) -> CGSize {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 17)
+        ]
+
+        let attributedText = NSAttributedString(string: text, attributes: attributes)
+
+        let constraintBox = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+
+        let rect = attributedText.boundingRect(with: constraintBox, options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil).integral
+
+        return rect.size
     }
 }
 
@@ -968,6 +1023,7 @@ struct Tittle: View {
     @ObservedObject var settings: UserDefaultsSettings
     var text: String
     var name: String = ""
+    var fontValue: CGFloat = UIScreen.main.bounds.height / 20
     
     var body: some View {
         HStack {
@@ -981,7 +1037,7 @@ struct Tittle: View {
             
             Text(text)
                 .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                .font(.system(size: UIScreen.main.bounds.height / 30))
+                .font(.system(size: fontValue))
                 .fontWeight(.bold)
                 .animation(.spring())
         }
@@ -1187,14 +1243,14 @@ struct Properties: View {
             ZStack(alignment: .top) {
                 Form {
                     GeometryReader { g in
-                        Tittle(settings: settings, text: "Настройки")
+                        Tittle(settings: settings, text: "Настройки", fontValue: UIScreen.main.bounds.height / 30)
                             .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
                             .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
                             .frame(width: g.size.width)
                             .onReceive(self.time) { (_) in
                                 let y = g.frame(in: .global).minY
                                 
-                                if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
+                                if -y > (UIScreen.main.bounds.height * 0.1 / 4) {
                                     withAnimation{
                                         self.show = true
                                     }
@@ -1410,10 +1466,9 @@ struct Navigation: View {
     @State var Cards: [fastCard] = [
         .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
         .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "Кафе"),
-        
+        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart), name: "Туалет"),
         .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "Мед пункт"),
         .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
-        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart), name: "Туалет")
     ]
     @State var errorType: errorSignal = .nothing
     @Binding var isBookmark: Bool
@@ -1426,7 +1481,7 @@ struct Navigation: View {
                 GeometryReader { g in
                     Tittle(settings: settings, text: "Навигация", name: "location.viewfinder")
                         .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
-                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
+                        .scaleEffect(g.frame(in: .global).minY >= 0 ? g.frame(in: .global).minY/150 + 1 : g.frame(in: .global).minY/150 + 1 > 0.8 ? g.frame(in: .global).minY/150 + 1 : 0.8)
                         .frame(width: g.size.width)
                         .onReceive(self.time) { (_) in
                             
@@ -1441,9 +1496,11 @@ struct Navigation: View {
                             }
                             
                         }
-                        .padding(.top, UIScreen.main.bounds.height*0.05)
+                        .padding(.top, UIScreen.main.bounds.height*0.08)
+//                        .padding(.bottom, UIScreen.main.bounds.height*0.04)
+                        
                 }
-                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
+                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.15, alignment: .center)
                 
                 VStack {
                     RoundedRectangle(cornerRadius: 25)
@@ -1618,6 +1675,20 @@ struct Navigation: View {
             
             start()
         })
+    }
+    
+    func labelSize(for text: String) -> CGSize {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 17)
+        ]
+
+        let attributedText = NSAttributedString(string: text, attributes: attributes)
+
+        let constraintBox = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+
+        let rect = attributedText.boundingRect(with: constraintBox, options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil).integral
+
+        return rect.size
     }
     
     func searchShortestWay(source: String, destinationList: [String]) {
@@ -1918,7 +1989,7 @@ struct dataList: View {
                 GeometryReader { g in
                     Tittle(settings: settings, text: "Расписание", name: "list.bullet.below.rectangle")
                         .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
-                        .scaleEffect(g.frame(in: .global).minY > 0 ? g.frame(in: .global).minY/150 + 1 : 1)
+                        .scaleEffect(g.frame(in: .global).minY >= 0 ? g.frame(in: .global).minY/150 + 1 : g.frame(in: .global).minY/150 + 1 > 0.8 ? g.frame(in: .global).minY/150 + 1 : 0.8)
                         .frame(width: g.size.width)
                     
                         .onReceive(self.time) { (_) in
@@ -1939,13 +2010,13 @@ struct dataList: View {
                             }
                             
                         }
-                        .padding(.top, UIScreen.main.bounds.height*0.05)
+                        .padding(.top, UIScreen.main.bounds.height*0.08)
                 }
-                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
+                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.15, alignment: .center)
                 
                 Rectangle()
                     .fill(Color.darkStart)
-                    .frame(height: 500)
+                    .frame(height: 1000)
                     .opacity(0.5)
                     .padding()
             }
@@ -1969,13 +2040,14 @@ struct header: View {
                 .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                 .font(.system(size: UIScreen.main.bounds.height / 30))
                 .fontWeight(.bold)
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.1)
-                .padding(.top, 15)
+                .frame(width: UIScreen.main.bounds.width)
+                .padding(.top, UIScreen.main.bounds.height*0.05)
+                .padding(.bottom, UIScreen.main.bounds.height*0.01)
                 .background(BlurBG(settings: settings))
                 .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
                 .edgesIgnoringSafeArea(.top)
             
-            Spacer()
+//            Spacer()
         }
     }
 }
@@ -1983,8 +2055,8 @@ struct header: View {
 struct BlurBG : UIViewRepresentable {
     @ObservedObject var settings: UserDefaultsSettings
     
-    func makeUIView(context: Context) -> UIVisualEffectView{
-        
+    func makeUIView(context: Context) -> UIVisualEffectView {
+
         let view = UIVisualEffectView(effect: UIBlurEffect(style: settings.theme == 0 ? .dark : .light))
         
         return view
@@ -2002,52 +2074,59 @@ struct ZoomingImage: View {
     @State var dragOffset: CGSize = CGSize(width: -504, height: -579)
     @State var dragOffsetPredicted: CGSize = CGSize(width: -504, height: -579)
     @Binding var blurValue: Double
+    @Binding var zoomScale: Double
     
     var body: some View {
         if viewerShown {
-            ZStack {
-                VStack {
-                    Spacer()
-                    
+                Zoom(zoomScale: $zoomScale) {
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(self.aspectRatio?.wrappedValue, contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height*0.35)
-                        .offset(x: self.dragOffset.width, y: self.dragOffset.height)
-                        .rotationEffect(.init(degrees: Double(self.dragOffset.width / 30)))
-                    
-                    Spacer()
                 }
-                .pinchToZoom()
+                .offset(x: self.dragOffset.width, y: self.dragOffset.height)
+                .rotationEffect(.init(degrees: Double(self.dragOffset.width / 30)))
+                .onTapGesture(count: 2) {
+                    withAnimation(.interactiveSpring()) {
+                        if self.zoomScale == 1.0 {
+                            zoomScale = 2.0
+                        } else {
+                            zoomScale = 1.0
+                        }
+                    }
+                }
                 .gesture(DragGesture()
                             .onChanged { value in
-                    self.dragOffset = value.translation
-                    self.dragOffsetPredicted = value.predictedEndTranslation
+                    if zoomScale == 1.0  && viewerShown {
+                        self.dragOffset = value.translation
+                        self.dragOffsetPredicted = value.predictedEndTranslation
+                    }
                 }
                             .onEnded { value in
-                    if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
-                        withAnimation(.spring()) {
-                            self.dragOffset = self.dragOffsetPredicted
+                    if zoomScale == 1.0 && viewerShown {
+                        if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
+                            withAnimation(.spring()) {
+                                self.dragOffset = self.dragOffsetPredicted
+                            }
+                            self.viewerShown = false
+                            
+                            return
                         }
-                        self.viewerShown = false
-                        
-                        return
-                    }
-                    withAnimation(.interactiveSpring()) {
-                        self.dragOffset = .zero
+                        withAnimation(.interactiveSpring()) {
+                            self.dragOffset = .zero
+                        }
                     }
                 }
                 )
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onChange(of: self.dragOffset, perform: { newValue in
-                blurValue = 15 - Double(abs(newValue.width) + abs(newValue.height)) / 40
-            })
-            .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.2)))
-            .onAppear() {
-                self.dragOffset = .zero
-                self.dragOffsetPredicted = .zero
-            }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onChange(of: self.dragOffset, perform: { newValue in
+                    blurValue = 15 - Double(abs(newValue.width) + abs(newValue.height)) / 40
+                })
+                .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.2)))
+                .onAppear() {
+                    dragOffset = .zero
+                    dragOffsetPredicted = .zero
+                }
         }
     }
 }
