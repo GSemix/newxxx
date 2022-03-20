@@ -641,20 +641,6 @@ struct navigationPage: View {
         ZStack(alignment: .top) {
                 ScrollView(.vertical, showsIndicators: false) {
                     ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                        Image(uiImage: maps[map]!.image)
-                            .resizable()
-                            .scaledToFit()
-                        
-                        Image(uiImage: maps[map]!.image)
-                            .resizable()
-                            .scaledToFit()
-                        Image(uiImage: maps[map]!.image)
-                            .resizable()
-                            .scaledToFit()
-                        Image(uiImage: maps[map]!.image)
-                            .resizable()
-                            .scaledToFit()
-                        
                             piceOfMap(settings: settings, image: maps[map]!.image)
                                 .onTapGesture(count: 1) {
                                     image = maps[map]!.image
