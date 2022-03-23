@@ -16,9 +16,16 @@ enum errorSignal {
     case nothing
 }
 
+enum Field {
+        case firstCab
+        case lastCab
+        case fast
+}
+
 struct Navigation: View {
     var geometry: GeometryProxy
     @State var errorInput: String = ""
+    @State var fastErrorInput: String = ""
     @State var sourse: String = "" // 2068
     @State var destination: String = "" // 2115
     @State var commonFriend: [UnweightedEdge] = []
@@ -46,202 +53,233 @@ struct Navigation: View {
         .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
     ]
     @State var errorType: errorSignal = .nothing
+    @State var fastErrorType: errorSignal = .nothing
     @Binding var isBookmark: Bool
     @State var fastCab: String = ""
     @State var typeCard: String = ""
+    @FocusState private var focusedField: Field?
+    @State var indexToScroll: Int?
     
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) { // Для анимации []
-                GeometryReader { g in
-                    Tittle(settings: settings, text: "Навигация", name: "location.viewfinder")
-                        .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
-                        .scaleEffect(g.frame(in: .global).minY >= 0 ? g.frame(in: .global).minY/150 + 1 : g.frame(in: .global).minY/150 + 1 > 0.8 ? g.frame(in: .global).minY/150 + 1 : 0.8)
-                        .frame(width: g.size.width)
-                        .onReceive(self.time) { (_) in
-                            
-                            let y = g.frame(in: .global).minY
-                            
-                            if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
-                                withAnimation{
-                                    self.show = true
-                                }
-                            } else {
-                                self.show = false
-                            }
-                            
-                        }
-                        .padding(.top, UIScreen.main.bounds.height*0.07)
-//                        .padding(.bottom, UIScreen.main.bounds.height*0.04)
-                        
-                }
-                .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.15, alignment: .center)
-                
-                VStack {
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(LinearGradient(settings.theme == 0 ? Color.darkEnd : Color.offWhite, settings.theme == 0 ? Color.darkStart : Color.offWhite))
-                        .frame(width: UIScreen.main.bounds.width*0.9, height: UIScreen.main.bounds.height / 4.5)
-                        .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: -5, y: -5)
-                        .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: 5, y: 5)
-                        .overlay(
-                            HStack {
-                                Spacer()
-                                
-                                entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings)
-                                
-                                Spacer()
-                                
-                                Button(action: {
-                                    withAnimation {
-                                        makeRoute()
-                                    }
-                                }) {
+                ScrollViewReader { scrollViewReaderValue in
+                    GeometryReader { g in
+                        Tittle(settings: settings, text: "Навигация", name: "location.viewfinder")
+                            .offset(y: g.frame(in: .global).minY > 0 ? -g.frame(in: .global).minY/25 : 0)
+                            .scaleEffect(g.frame(in: .global).minY >= 0 ? g.frame(in: .global).minY/150 + 1 : g.frame(in: .global).minY/150 + 1 > 0.8 ? g.frame(in: .global).minY/150 + 1 : 0.8)
+                            .frame(width: g.size.width)
+                            .onReceive(self.time) { (_) in
                                     
-                                    Image(systemName: "magnifyingglass")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
-                                        .padding(.horizontal, 30)
-                                }
-                                .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
-                                
-                            }
-                        )
-                    
-                    inputError(errorInput: $errorInput)
-                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
-                    
-                    HStack {
-                        Image(systemName: "clock")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
-                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                        
-                        Text("Быстрый поиск")
-                            .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                            .font(.system(size: UIScreen.main.bounds.height / 30))
-                            .fontWeight(.bold)
-                    }
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        ScrollViewReader { value in
-                            HStack(spacing: -30) {
-                                ForEach(Cards.indices) { index in
-                                    GeometryReader { gg in
-                                        FlipView(showBack: self.Cards[index].isFaceUp, settings: settings, geometry: gg, imageName: self.Cards[index].images, color: self.Cards[index].color, fastCab: $fastCab, typeCard: $typeCard, name: self.Cards[index].name)
-                                            .onTapGesture {
-                                                if !Cards[index].isFaceUp {
-                                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
-                                                        value.scrollTo(index, anchor: .center)
-                                                    }
-                                                }
-                                                
-                                                withAnimation(.linear(duration: 0.2)) {
-                                                    if !self.Cards[index].isFaceUp {
-                                                        self.Cards[index].isFaceUp.toggle()
-                                                    }
-                                                    
-                                                    for i in 0..<Cards.count {
-                                                        if i != index {
-                                                            self.Cards[i].isFaceUp = false
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
+                                let y = g.frame(in: .global).minY
+                                    
+                                if -y > (UIScreen.main.bounds.height * 0.1 / 2) {
+                                    withAnimation{
+                                        self.show = true
                                     }
-                                    .id(index)
-                                    .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
-                                    .padding(.bottom, 50)
-//                                    .padding(.top, 25)
-                                    .padding(.horizontal)
+                                } else {
+                                    self.show = false
                                 }
-                                .onChange(of: fastCab) { newValue in
-                                    searchShortestWay(source: newValue, destinationList: searchDestinationPoint(type: typeCard))
-                                }
+                                    
                             }
-                            .onAppear(perform: {
-                                value.scrollTo(Int(Cards.count/2), anchor: .center)
-                            })
-                            .padding(.trailing, 15)
-                        }
+                            .padding(.top, UIScreen.main.bounds.height*0.07)
+        //                       .padding(.bottom, UIScreen.main.bounds.height*0.04)
+                                
                     }
-                    
-                    VStack(spacing: 20) {
+                    .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.15, alignment: .center)
+                        
+                    VStack {
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(LinearGradient(settings.theme == 0 ? Color.darkEnd : Color.offWhite, settings.theme == 0 ? Color.darkStart : Color.offWhite))
+                            .frame(width: UIScreen.main.bounds.width*0.9, height: UIScreen.main.bounds.height / 4.5)
+                            .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: -5, y: -5)
+                            .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: 5, y: 5)
+                            .overlay(
+                                HStack {
+                                    Spacer()
+                                        
+                                    entryField(sourse: $sourse, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings, focusedField: _focusedField, indexToScroll: $indexToScroll)
+                                        
+                                    Spacer()
+                                        
+                                    Button(action: {
+                                        withAnimation {
+                                            makeRoute()
+                                        }
+                                    }) {
+                                            
+                                        Image(systemName: "magnifyingglass")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: UIScreen.main.bounds.width/10, height: UIScreen.main.bounds.height / 4.5)
+                                            .padding(.horizontal, 30)
+                                    }
+                                    .buttonStyle(ColorfulButtonStyleWithoutShadows(settings: settings))
+                                        
+                                }
+                            )
+                            .id(0)
+                            .padding(.bottom)
+                            
+        //                    inputError(errorInput: $errorInput)
+        //                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
+                            
                         HStack {
-                            Image(systemName: "bookmark")
+                            Image(systemName: "clock")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.width*0.05)
+                                .frame(width: UIScreen.main.bounds.width*0.07, height: UIScreen.main.bounds.width*0.07)
                                 .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                            
-                            Text("Избранные маршруты")
+                                
+                            Text("Быстрый поиск")
                                 .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
                                 .font(.system(size: UIScreen.main.bounds.height / 30))
                                 .fontWeight(.bold)
                         }
-                        
-                        if !self.settings.selectedMaps.isEmpty {
-                            ForEach(self.settings.selectedMaps.indices) { index in
-                                Button(action: {
-                                    withAnimation {
-                                        let numbers: [String] = self.settings.selectedMaps[index].split(separator: " ").map {String($0)}
-                                        makeRouteFast(first: numbers[0], last: numbers[1])
+                            
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            ScrollViewReader { value in
+                                HStack(spacing: -30) {
+                                    ForEach(Cards.indices) { index in
+                                        GeometryReader { gg in
+                                            FlipView(showBack: self.Cards[index].isFaceUp, settings: settings, geometry: gg, imageName: self.Cards[index].images, color: self.Cards[index].color, fastCab: $fastCab, typeCard: $typeCard, name: self.Cards[index].name, fastErrorInput: $fastErrorInput, fastErrorType: $fastErrorType, indexToScroll: $indexToScroll)
+                                                .focused($focusedField, equals: .fast)
+                                                .onTapGesture {
+                                                    if !Cards[index].isFaceUp {
+                                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                                            value.scrollTo(index, anchor: .center)
+                                                        }
+                                                    }
+                                                        
+                                                    withAnimation(.linear(duration: 0.2)) {
+                                                        if !self.Cards[index].isFaceUp {
+                                                            self.Cards[index].isFaceUp.toggle()
+                                                        }
+                                                            
+                                                        for i in 0..<Cards.count {
+                                                            if i != index {
+                                                                self.Cards[i].isFaceUp = false
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
+                                        }
+                                        .id(index)
+                                        .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
+                                        .padding(.bottom, 50)
+        //                                    .padding(.top, 25)
+                                        .padding(.horizontal)
                                     }
-                                }) {
-                                    HStack{
-//                                        Text(self.settings.selectedMaps[index].replacingOccurrences(of: " ", with: " -> "))
-                                        
-                                        Spacer()
-                                        
-                                        Text(self.settings.selectedMaps[index].split(separator: " ")[0])
-                                            .font(.system(size: UIScreen.main.bounds.height / 50))
-                                            .fontWeight(.semibold)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.forward.square")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: UIScreen.main.bounds.width*0.8*0.07)
-                                        
-                                        Spacer()
-                                        
-                                        Text(self.settings.selectedMaps[index].split(separator: " ")[1])
-                                            .font(.system(size: UIScreen.main.bounds.height / 50))
-                                            .fontWeight(.semibold)
-                                        
-                                        Spacer()
+                                    .onChange(of: fastCab) { newValue in
+                                        searchShortestWay(source: newValue, destinationList: searchDestinationPoint(type: typeCard))
                                     }
-                                    .frame(width: geometry.size.width * 0.8)
                                 }
-                                .buttonStyle(ColorfulButtonStyleRoundedRectangle(settings: settings))
+                                .onAppear(perform: {
+                                    value.scrollTo(Int(Cards.count/2), anchor: .center)
+                                })
+                                .padding(.trailing, 15)
                             }
-                        } else {
-                            Text("Пока здесь ничего нет")
-                                .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                                .font(.system(size: UIScreen.main.bounds.height / 50))
-                                .fontWeight(.semibold)
                         }
+                        .id(1)
+                            
+        //                    inputError(errorInput: $fastErrorInput)
+        //                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
+                            
+                        VStack(spacing: 20) {
+                            HStack {
+                                Image(systemName: "bookmark")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.width*0.05)
+                                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+                                    
+                                Text("Избранные маршруты")
+                                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+                                    .font(.system(size: UIScreen.main.bounds.height / 30))
+                                    .fontWeight(.bold)
+                            }
+                                
+                            if !self.settings.selectedMaps.isEmpty {
+                                ForEach(self.settings.selectedMaps.indices) { index in
+                                    Button(action: {
+                                        withAnimation {
+                                            let numbers: [String] = self.settings.selectedMaps[index].split(separator: " ").map {String($0)}
+                                            makeRouteFast(first: numbers[0], last: numbers[1])
+                                        }
+                                    }) {
+                                        HStack{
+        //                                        Text(self.settings.selectedMaps[index].replacingOccurrences(of: " ", with: " -> "))
+                                                
+                                            Spacer()
+                                                
+                                            Text(self.settings.selectedMaps[index].split(separator: " ")[0])
+                                                .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                .fontWeight(.semibold)
+                                                
+                                            Spacer()
+                                                
+                                            Image(systemName: "chevron.forward.square")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: UIScreen.main.bounds.width*0.8*0.07)
+                                                
+                                            Spacer()
+                                                
+                                            Text(self.settings.selectedMaps[index].split(separator: " ")[1])
+                                                .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                .fontWeight(.semibold)
+                                                
+                                            Spacer()
+                                        }
+                                        .frame(width: geometry.size.width * 0.8)
+                                    }
+                                    .buttonStyle(ColorfulButtonStyleRoundedRectangle(settings: settings))
+                                }
+                            } else {
+                                Text("Пока здесь ничего нет")
+                                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+                                    .font(.system(size: UIScreen.main.bounds.height / 50))
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        .padding(.top, 5)
+                            
+                            //                    Spacer()
+                            //
+                            //                    Advert()
+                            //
+                            //                    Advert()
+                            
+                        Spacer()
+                            .frame(height: UIScreen.main.bounds.height/4)
                     }
-                    .padding(.top, 5)
-                    //                    Spacer()
-                    //
-                    //                    Advert()
-                    //
-                    //                    Advert()
-                    
-                    Spacer()
-                        .frame(height: UIScreen.main.bounds.height/4)
+                        .onChange(of: indexToScroll) { value in                             // qweqweqweqweqweqweqwqweqweqweqweqweqweqweqwewqeqwe
+                            if value != -1 {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
+                                    scrollViewReaderValue.scrollTo(value, anchor: .leading)
+                                }
+                            }
+                        }
+                        .padding(.top, 15)
+                    }
                 }
-                .padding(.top, 15)
-            }
             
             if self.show{
                 header(settings: settings, text: "Навигация")
             }
             
+        }
+        .onTapGesture {
+            self.endEditing()
+        }
+        .onSubmit {
+            switch focusedField {
+                case .firstCab:
+                    focusedField = .lastCab
+                default:
+                    self.endEditing()
+            }
         }
         .edgesIgnoringSafeArea(.top)
         .edgesIgnoringSafeArea(.bottom)
@@ -270,36 +308,41 @@ struct Navigation: View {
         if destinationList.isEmpty {
             print("Неизвестный тип")
         } else {
-            var bestCommonFriend: [UnweightedEdge] = []
-            var destinationName: String = ""
-            
-            for x in destinationList {
-                let commonFriend: [UnweightedEdge] = cityGraph.bfs(from: find(p: source), to: find(p: x))
+            if find(p: source) == Point() {
+                fastErrorType = .all
+                fastErrorInput = "Кабинет \(source) не найден"
+            } else {
+                var bestCommonFriend: [UnweightedEdge] = []
+                var destinationName: String = ""
                 
-                if x == destinationList[0] {
-                    bestCommonFriend = commonFriend
-                     destinationName = x
-                } else {
-                    if commonFriend.count < bestCommonFriend.count {
-                       bestCommonFriend = commonFriend
-                        destinationName = x
+                for x in destinationList {
+                    let commonFriend: [UnweightedEdge] = cityGraph.bfs(from: find(p: source), to: find(p: x))
+                    
+                    if x == destinationList[0] {
+                        bestCommonFriend = commonFriend
+                         destinationName = x
+                    } else {
+                        if commonFriend.count < bestCommonFriend.count {
+                           bestCommonFriend = commonFriend
+                            destinationName = x
+                        }
                     }
                 }
-            }
-            
-            if !bestCommonFriend.isEmpty {
-                commonFriend = bestCommonFriend
                 
-                s = parse(way: commonFriend.description)
-                sPoint = s.map {Vertex[Int($0)!].name}
-                paint = getLines()
-                
-                for x in 0...paint.count - 1 where x % 3 == 0 {
-                    maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [source, destinationName]), forKey: x / 3)
+                if !bestCommonFriend.isEmpty {
+                    commonFriend = bestCommonFriend
+                    
+                    s = parse(way: commonFriend.description)
+                    sPoint = s.map {Vertex[Int($0)!].name}
+                    paint = getLines()
+                    
+                    for x in 0...paint.count - 1 where x % 3 == 0 {
+                        maps.updateValue(mapContents(name: "Maps/" + paint[x], mainContent: getSVG(resource: "Maps/" + paint[x]), image: getImage(resource: "Maps/" + paint[x], linesCode: paint[x + 1]), text: paint[x + 2], way: [source, destinationName]), forKey: x / 3)
+                    }
+                    
+                    self.isBookmark = self.settings.selectedMaps.contains("\(source) \(destinationName)")
+                    viewRouter.currentPage = .maps
                 }
-                
-                self.isBookmark = self.settings.selectedMaps.contains("\(source) \(destinationName)")
-                viewRouter.currentPage = .maps
             }
         }
     }
@@ -559,15 +602,30 @@ struct entryField: View {
     @Binding var errorInput: String
     @Binding var errorType: errorSignal
     @ObservedObject var settings: UserDefaultsSettings
+    @State var onTapFields: [Bool] = [false, false]
+    @FocusState var focusedField: Field?
+    @Binding var indexToScroll: Int?
     
     var body: some View {
         VStack {
             Spacer()
             
-            TextField("", text: $sourse)
+            TextField("", text: $sourse, onEditingChanged: { value in
+                if value {
+                    onTapFields[0] = true
+                    indexToScroll = -1
+                    indexToScroll = 0
+                } else {
+                    if sourse.isEmpty {
+                        onTapFields[0] = false
+                    }
+                }
+            })
+                .focused($focusedField, equals: .firstCab)
+                .submitLabel(.next)
                 .modifier(
                     PlaceholderStyle(
-                        showPlaceHolder: sourse.isEmpty,
+                        showPlaceHolder: !onTapFields[0], // sourse.isEmpty
                         placeholder: "Начальный кабинет",
                         center: true,
                         settings: settings
@@ -587,8 +645,11 @@ struct entryField: View {
                 }
                 .textContentType(.dateTime)
                 .frame(height: 50)
-                .multilineTextAlignment(.leading)
-                .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .start || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
+                .multilineTextAlignment(.center)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10.0)
+                        .strokeBorder(errorType == .start || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0))
+                )
             
             Spacer()
             
@@ -602,10 +663,21 @@ struct entryField: View {
             
             Spacer()
             
-            TextField("", text: $destination)
+            TextField("", text: $destination, onEditingChanged: { value in
+                if value {
+                    onTapFields[1] = true
+                    indexToScroll = -1
+                    indexToScroll = 0
+                } else {
+                    if destination.isEmpty {
+                        onTapFields[1] = false
+                    }
+                }
+            })
+                .focused($focusedField, equals: .lastCab)
                 .modifier(
                     PlaceholderStyle(
-                        showPlaceHolder: destination.isEmpty,
+                        showPlaceHolder: !onTapFields[1],
                         placeholder: "Конечный кабинет",
                         center: true,
                         settings: settings
@@ -623,8 +695,9 @@ struct entryField: View {
                         errorType = .nothing
                     }
                 }
+                .textContentType(.dateTime)
                 .frame(height: 50)
-                .multilineTextAlignment(.leading)
+                .multilineTextAlignment(.center)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .end || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             
             Spacer()

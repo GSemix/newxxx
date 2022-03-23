@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SVGKit
 
 struct CardFlip: ViewModifier {
     var isFaceUp: Bool
@@ -71,6 +72,10 @@ struct FlipView: View {
     @Binding var fastCab: String
     @Binding var typeCard: String
     var name: String
+    @State var onTapField: Bool = false
+    @Binding var fastErrorInput: String
+    @Binding var fastErrorType: errorSignal
+    @Binding var indexToScroll: Int?
     
     var body: some View {
         RoundedRectangle(cornerRadius: 25)
@@ -105,15 +110,37 @@ struct FlipView: View {
                     HStack {
                         Spacer()
                         
-                        TextField("", text: $text)
+                        TextField("", text: $text, onEditingChanged: { value in
+                            if value {
+                                onTapField = true
+                                indexToScroll = 1
+                            } else {
+                                if text.isEmpty {
+                                    onTapField = false
+                                }
+                            }
+                        })
                             .modifier(
                                 PlaceholderStyle(
-                                    showPlaceHolder: text.isEmpty,
+                                    showPlaceHolder: !onTapField,
                                     placeholder: "Начальный кабинет",
                                     center: true,
                                     settings: settings
                                 )
                             )
+                            .onChange(of: text) { newValue in
+                                withAnimation {
+                                    fastErrorInput = ""
+                                }
+                                    
+                                if fastErrorType == .all {
+                                    fastErrorType = .nothing
+                                }
+                            }
+                            .textContentType(.dateTime)
+                            .frame(height: 50)
+                            .multilineTextAlignment(.center)
+                            .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(fastErrorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
                         
                         Spacer()
                         
@@ -136,6 +163,8 @@ struct FlipView: View {
             .onChange(of: flipped) { newValue in
                 if !newValue {
                     self.text = ""
+                    self.fastErrorType = .nothing
+                    self.fastErrorInput = ""
                     self.fastCab = ""
                 }
             }

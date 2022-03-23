@@ -61,3 +61,11 @@ struct ContentView_Previews: PreviewProvider {
         ContentView(viewRouter: ViewRouter())
     }
 }
+
+#if canImport(UIKit)
+extension View {
+    func endEditing() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif
