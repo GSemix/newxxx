@@ -255,7 +255,7 @@ struct Navigation: View {
                             .frame(height: UIScreen.main.bounds.height/4)
                     }
                         .onChange(of: indexToScroll) { value in                             // qweqweqweqweqweqweqwqweqweqweqweqweqweqweqwewqeqwe
-                            if value != -1 {
+                            if value != nil {
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
                                     scrollViewReaderValue.scrollTo(value, anchor: .leading)
                                 }
@@ -270,6 +270,11 @@ struct Navigation: View {
             }
             
         }
+//        .onLongPressGesture(minimumDuration: 0) { // Убрать клавиатуру при скроле
+//            indexToScroll = nil
+//            self.endEditing()
+//            print("hello")
+//        }
         .onTapGesture {
             self.endEditing()
         }
@@ -613,7 +618,6 @@ struct entryField: View {
             TextField("", text: $sourse, onEditingChanged: { value in
                 if value {
                     onTapFields[0] = true
-                    indexToScroll = -1
                     indexToScroll = 0
                 } else {
                     if sourse.isEmpty {
@@ -666,7 +670,6 @@ struct entryField: View {
             TextField("", text: $destination, onEditingChanged: { value in
                 if value {
                     onTapFields[1] = true
-                    indexToScroll = -1
                     indexToScroll = 0
                 } else {
                     if destination.isEmpty {
