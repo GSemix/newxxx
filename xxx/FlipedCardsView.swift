@@ -118,6 +118,8 @@ struct FlipView: View {
                                 if text.isEmpty {
                                     onTapField = false
                                 }
+                                
+                                indexToScroll = nil
                             }
                         })
                             .modifier(

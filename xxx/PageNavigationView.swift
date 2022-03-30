@@ -118,7 +118,7 @@ struct Navigation: View {
                                         
                                 }
                             )
-                            .id(0)
+                            //.id(0)
                             .padding(.bottom)
                             
         //                    inputError(errorInput: $errorInput)
@@ -256,6 +256,8 @@ struct Navigation: View {
                     }
                         .onChange(of: indexToScroll) { value in                             // qweqweqweqweqweqweqwqweqweqweqweqweqweqweqwewqeqwe
                             if value != nil {
+                                self.show = true
+                                
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3)) {
                                     scrollViewReaderValue.scrollTo(value, anchor: .leading)
                                 }
@@ -265,7 +267,7 @@ struct Navigation: View {
                     }
                 }
             
-            if self.show{
+            if self.show {
                 header(settings: settings, text: "Навигация")
             }
             
@@ -618,7 +620,6 @@ struct entryField: View {
             TextField("", text: $sourse, onEditingChanged: { value in
                 if value {
                     onTapFields[0] = true
-                    indexToScroll = 0
                 } else {
                     if sourse.isEmpty {
                         onTapFields[0] = false
@@ -670,7 +671,6 @@ struct entryField: View {
             TextField("", text: $destination, onEditingChanged: { value in
                 if value {
                     onTapFields[1] = true
-                    indexToScroll = 0
                 } else {
                     if destination.isEmpty {
                         onTapFields[1] = false
