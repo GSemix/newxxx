@@ -69,16 +69,16 @@ struct tabBarIcons: View {
                         
                         Spacer()
                         
-                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .datalist, width: geometry.size.width, height: geometry.size.height, systemIconName: "list.bullet", tabName: "Расписание")
-                            .padding(.top, geometry.size.height/16/8)
-                        
-                        
-                        Spacer()
-                        
-                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .news, width: geometry.size.width, height: geometry.size.height, systemIconName: "newspaper", tabName: "Новости")
-                            .padding(.top, geometry.size.height/16/8)
-                        
-                        Spacer()
+//                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .datalist, width: geometry.size.width, height: geometry.size.height, systemIconName: "list.bullet", tabName: "Расписание")
+//                            .padding(.top, geometry.size.height/16/8)
+//
+//
+//                        Spacer()
+//
+//                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .news, width: geometry.size.width, height: geometry.size.height, systemIconName: "newspaper", tabName: "Новости")
+//                            .padding(.top, geometry.size.height/16/8)
+//
+//                        Spacer()
                         
                         TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .properties, width: geometry.size.width, height: geometry.size.height, systemIconName: "gearshape", tabName: "Настройки")
                             .padding(.top, geometry.size.height/16/8)
@@ -87,7 +87,6 @@ struct tabBarIcons: View {
                     }
                     .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
                     .frame(width: geometry.size.width, height: geometry.size.height/9)
-                    //                    .shadow(color: .black, radius: 15)
                     
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height/10)

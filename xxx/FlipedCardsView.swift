@@ -86,10 +86,7 @@ struct FlipView: View {
             .padding(.vertical, 30)
             .overlay(
                 ZStack {
-                    HStack {
-                        Spacer()
-                            .frame(width: geometry.size.width/5)
-                        
+                    HStack {                        
                         ForEach(0..<imageName.count) { name in
                             color
                                 .mask(
@@ -101,10 +98,8 @@ struct FlipView: View {
                                         .opacity(0.8)
                                 )
                         }
-                        
-                        Spacer()
-                            .frame(width: geometry.size.width/5)
                     }
+                    .frame(width: geometry.size.width*0.7)
                     .opacity(flipped ? 0.0 : 1.0)
                     
                     HStack {
@@ -149,6 +144,10 @@ struct FlipView: View {
                         Button(action: {
                             self.fastCab = self.text
                             self.typeCard = name
+                            
+                            if text.isEmpty {
+                                fastErrorType = .all
+                            }
                         }) {
                             Image(systemName: "magnifyingglass")
                                 .resizable()
@@ -165,6 +164,7 @@ struct FlipView: View {
             .onChange(of: flipped) { newValue in
                 if !newValue {
                     self.text = ""
+                    self.onTapField = false
                     self.fastErrorType = .nothing
                     self.fastErrorInput = ""
                     self.fastCab = ""

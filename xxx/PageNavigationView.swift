@@ -279,6 +279,12 @@ struct Navigation: View {
 //        }
         .onTapGesture {
             self.endEditing()
+            
+            withAnimation(.linear(duration: 0.2)) {
+                for i in 0..<Cards.count {
+                    self.Cards[i].isFaceUp = false
+                }
+            }
         }
         .onSubmit {
             switch focusedField {
@@ -294,6 +300,8 @@ struct Navigation: View {
             self.Cards[2].color = settings.theme == 0 ? LinearGradient(.lightEnd, .lightStart) : LinearGradient(.purpleEnd, .purpleStart)
             
             start()
+            
+            print("[+] Data has been loaded")
         })
     }
     

@@ -40,8 +40,8 @@ struct Properties: View {
                     .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
                     
                     
-                    Section2(settings: settings)
-                    Section1(settings: settings)
+                    //Section2(settings: settings)
+                    //Section1(settings: settings)
                     Section5(settings: settings)
                     Section3(settings: settings)
                     Section4(settings: settings)
