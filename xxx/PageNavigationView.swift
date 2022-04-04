@@ -22,6 +22,14 @@ enum Field {
         case fast
 }
 
+struct fastCard: Identifiable {
+    var id: UUID = UUID()
+    var isFaceUp: Bool = false
+    var images: [String]
+    var color: LinearGradient
+    var name: String
+}
+
 struct Navigation: View {
     var geometry: GeometryProxy
     @State var errorInput: String = ""
@@ -46,9 +54,9 @@ struct Navigation: View {
     @State var show = false
     @ObservedObject var settings: UserDefaultsSettings
     @State var Cards: [fastCard] = [
-        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
         .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "Кафе"),
         .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart), name: "Туалет"),
+        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
         .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "Мед пункт"),
         .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
     ]
@@ -208,14 +216,23 @@ struct Navigation: View {
                                             makeRouteFast(first: numbers[0], last: numbers[1])
                                         }
                                     }) {
-                                        HStack{
-        //                                        Text(self.settings.selectedMaps[index].replacingOccurrences(of: " ", with: " -> "))
+                                        HStack {
                                                 
                                             Spacer()
                                                 
-                                            Text(self.settings.selectedMaps[index].split(separator: " ")[0])
-                                                .font(.system(size: UIScreen.main.bounds.height / 50))
-                                                .fontWeight(.semibold)
+                                            ForEach(self.Cards.indices) { i in
+                                                if self.settings.selectedMaps[index].split(separator: " ")[0].contains(self.Cards[i].name) {
+                                                    Text(self.Cards[i].name)
+                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                        .fontWeight(.semibold)
+                                                }
+                                                
+                                                if i == self.Cards.count - 1 && !self.settings.selectedMaps[index].split(separator: " ")[0].contains("_") {
+                                                    Text(self.settings.selectedMaps[index].split(separator: " ")[0])
+                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                        .fontWeight(.semibold)
+                                                }
+                                            }
                                                 
                                             Spacer()
                                                 
@@ -226,9 +243,20 @@ struct Navigation: View {
                                                 
                                             Spacer()
                                                 
-                                            Text(self.settings.selectedMaps[index].split(separator: " ")[1])
-                                                .font(.system(size: UIScreen.main.bounds.height / 50))
-                                                .fontWeight(.semibold)
+                                            ForEach(self.Cards.indices) { i in
+                                                if self.settings.selectedMaps[index].split(separator: " ")[1].contains(self.Cards[i].name) {
+                                                    Text(self.Cards[i].name)
+                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                        .fontWeight(.semibold)
+                                                }
+                                                
+                                                if i == self.Cards.count - 1 && !self.settings.selectedMaps[index].split(separator: " ")[1].contains("_") {
+                                                    Text(self.settings.selectedMaps[index].split(separator: " ")[1])
+                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                        .fontWeight(.semibold)
+                                                }
+                                            }
+
                                                 
                                             Spacer()
                                         }
@@ -237,10 +265,17 @@ struct Navigation: View {
                                     .buttonStyle(ColorfulButtonStyleRoundedRectangle(settings: settings))
                                 }
                             } else {
-                                Text("Пока здесь ничего нет")
-                                    .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
-                                    .font(.system(size: UIScreen.main.bounds.height / 50))
-                                    .fontWeight(.semibold)
+                                VStack {
+                                    Text("Пока здесь ничего нет")
+                                        .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                        .fontWeight(.semibold)
+                                    
+//                                    Text("Для добавления маршрута в избранные нажмите на \(Image(systemName: "bookmark")) при просмотре")
+//                                        .foregroundColor(settings.theme == 0 ? .offWhite : .darkStart)
+//                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+//                                        .fontWeight(.semibold)
+                                }
                             }
                         }
                         .padding(.top, 5)
@@ -252,7 +287,7 @@ struct Navigation: View {
                             //                    Advert()
                             
                         Spacer()
-                            .frame(height: UIScreen.main.bounds.height/4)
+                            .frame(height: UIScreen.main.bounds.height/4 + UIScreen.main.bounds.height/4)
                     }
                         .onChange(of: indexToScroll) { value in                             // qweqweqweqweqweqweqwqweqweqweqweqweqweqweqwewqeqwe
                             if value != nil {
@@ -522,8 +557,10 @@ struct Navigation: View {
                     
                     newPaint = "<polyline class=\"st8\" points=\"" + "\(find(p: sPoint[x+1]).x0) \(find(p: sPoint[x+1]).y0), \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
                 } else {
-                    newPaint += ", \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
+                        newPaint += ", \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
                 }
+                
+                print("\(find(p: sPoint[x+1]).name)")
             }
         }
         

@@ -21,14 +21,6 @@ struct CardFlip: ViewModifier {
     }
 }
 
-struct fastCard: Identifiable {
-    var id: UUID = UUID()
-    var isFaceUp: Bool = false
-    var images: [String]
-    var color: LinearGradient
-    var name: String
-}
-
 struct FlipEffect: GeometryEffect {
 
       var animatableData: Double {
