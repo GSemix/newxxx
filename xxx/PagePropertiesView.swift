@@ -129,6 +129,7 @@ struct Section2: View {
 
 struct Section3: View {
     @ObservedObject var settings: UserDefaultsSettings
+    
     var body: some View {
         Section(header: Text("О приложении")) {
             HStack {

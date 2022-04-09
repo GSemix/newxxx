@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+enum Page {
+    case navigation
+    case datalist
+    case properties
+    case news
+    case maps
+}
+
 class ViewRouter: ObservableObject {
     @Published var currentPage: Page = .navigation
 }
 
 struct ContentView: View {
+    @State var Nav: PointRouting = PointRouting(nameOfFileVertex: "Data/Vertex", nameOfFileEdges: "Data/Edges")
     @State var maps: Dictionary<Int, mapContents> = Dictionary()
     @StateObject var viewRouter: ViewRouter
     @ObservedObject var settings = UserDefaultsSettings()
@@ -24,7 +33,7 @@ struct ContentView: View {
                 
             case .navigation:
                 Wall(settings: settings, page: .navigation)
-                Navigation(geometry: geometry, maps: $maps, viewRouter: viewRouter, settings: settings, isBookmark: $isBookmark)
+                Navigation(Nav: $Nav, geometry: geometry, maps: $maps, viewRouter: viewRouter, settings: settings, isBookmark: $isBookmark)
 
             case .datalist:
                 Wall(settings: settings, page: .datalist)
@@ -35,7 +44,7 @@ struct ContentView: View {
                 
             case .maps:
                 Wall(settings: settings, page: .maps)
-                navigationPage(maps: $maps, viewRouter: viewRouter, bookmark: $isBookmark, settings: settings)
+                navigationPage(Nav: $Nav, viewRouter: viewRouter, bookmark: Nav.getIsBookmark(), settings: settings)
                     .transition(.scale)
                 
             case .news:

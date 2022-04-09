@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct navigationPage: View {
-    @Binding var maps: Dictionary<Int, mapContents>
+    @Binding var Nav: PointRouting
     @State var image: UIImage = UIImage()
     @StateObject var viewRouter: ViewRouter
-    @Binding var bookmark: Bool
+    @State var bookmark: Bool
     @ObservedObject var settings: UserDefaultsSettings
     @State var showImageViewer: Bool = false
     @State var blurValue: Double = 0
@@ -20,23 +20,23 @@ struct navigationPage: View {
     var body: some View {
         ZStack(alignment: .top) {
                 ScrollView(.vertical, showsIndicators: false) {
-                    ForEach (Array(maps.keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                            piceOfMap(settings: settings, image: maps[map]!.image)
+                    ForEach (Array(Nav.getMaps().keys).sorted(by: {$0 < $1}), id: \.self) { map in
+                            piceOfMap(settings: settings, image: Nav.getMaps()[map]!.image)
                                 .onTapGesture(count: 1) {
-                                    image = maps[map]!.image
+                                    image = Nav.getMaps()[map]!.image
                                     withAnimation(.interactiveSpring()) {
                                         showImageViewer = true
                                     }
                                 }
-                            
-                            Explanation(settings: settings, text: maps[map]!.text)
+
+                        Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
                                 .padding(.vertical, 5)
                     }
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height*0.15)
                 }
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height) // Избранные маршруты (isBookmark)
                 .frame(maxHeight: .infinity)
                 .blur(radius: blurValue)
                 .disabled(showImageViewer)
@@ -58,10 +58,11 @@ struct navigationPage: View {
                                 Button(action: {
                                     withAnimation {
                                         clearSVG()
-                                        maps.removeAll()
+                                        Nav.clearMaps()
                                         image = UIImage()
                                         blurValue = 0
                                         showImageViewer = false
+                                        Nav.setIsBookmark(isBookmark: false)
                                         viewRouter.currentPage = .navigation
                                     }
                                 }) {
@@ -79,12 +80,12 @@ struct navigationPage: View {
                                 
                                 Toggle(isOn: $bookmark.didSet { _ in
                                     if bookmark {
-                                        if !self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                            self.settings.selectedMaps.append(self.maps[0]!.way.joined(separator: " "))
+                                        if !self.settings.selectedMaps.contains(Nav.getMaps()[0]!.way.joined(separator: " ")) {
+                                            self.settings.selectedMaps.append(Nav.getMaps()[0]!.way.joined(separator: " "))
                                         }
                                     } else {
-                                        if self.settings.selectedMaps.contains(self.maps[0]!.way.joined(separator: " ")) {
-                                            self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: self.maps[0]!.way.joined(separator: " "))!)
+                                        if self.settings.selectedMaps.contains(Nav.getMaps()[0]!.way.joined(separator: " ")) {
+                                            self.settings.selectedMaps.remove(at: self.settings.selectedMaps.firstIndex(of: Nav.getMaps()[0]!.way.joined(separator: " "))!)
                                         }
                                     }
                                 }
@@ -109,13 +110,11 @@ struct navigationPage: View {
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
     
-    func clearSVG () {
-        for resource in maps.keys {
-            let url = URL(fileURLWithPath: Bundle.main.path(forResource: maps[resource]!.name, ofType: "svg")!)
-            try? maps[resource]!.mainContent.write(to: url, atomically: true, encoding: .utf8)
+    func clearSVG () { // Зачем?
+        for resource in Nav.getMaps().keys {
+            let url = URL(fileURLWithPath: Bundle.main.path(forResource: Nav.getMaps()[resource]!.name, ofType: "svg")!)
+            try? Nav.getMaps()[resource]!.mainContent.write(to: url, atomically: true, encoding: .utf8)
         }
-        
-        maps.removeAll()
     }
 }
 

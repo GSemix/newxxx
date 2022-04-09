@@ -120,10 +120,10 @@ struct FlipView: View {
                             .onChange(of: text) { newValue in
                                 withAnimation {
                                     fastErrorInput = ""
-                                }
                                     
-                                if fastErrorType == .all {
-                                    fastErrorType = .nothing
+                                    if fastErrorType == .all {
+                                        fastErrorType = .nothing
+                                    }
                                 }
                             }
                             .textContentType(.dateTime)
@@ -137,8 +137,10 @@ struct FlipView: View {
                             self.fastCab = self.text
                             self.typeCard = name
                             
-                            if text.isEmpty {
-                                fastErrorType = .all
+                            withAnimation {
+                                if text.isEmpty {
+                                    fastErrorType = .all
+                                }
                             }
                         }) {
                             Image(systemName: "magnifyingglass")
