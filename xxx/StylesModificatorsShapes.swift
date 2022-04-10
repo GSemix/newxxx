@@ -166,7 +166,6 @@ public struct PlaceholderStyle: ViewModifier {
     var placeholder: String
     var center: Bool
     @ObservedObject var settings: UserDefaultsSettings
-//    var paddingValue: CGFloat = .zero
     
     public func body(content: Content) -> some View {
         ZStack(alignment: center ? .center : .leading) {
@@ -180,11 +179,10 @@ public struct PlaceholderStyle: ViewModifier {
             
             content
                 .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
-//                .padding(.leading, UIScreen.main.bounds.width*0.088)
-//                .padding(.leading, paddingValue) // Разобраться с отступами для ввода на разных размерах экрана
+                .font(.system(size: UIScreen.main.bounds.width/20, weight: .heavy, design: .default))
         }
     }
-} // Отступы разных размеров экрана
+}
 
 struct RoundedCorner: Shape {
     

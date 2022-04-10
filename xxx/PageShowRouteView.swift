@@ -105,7 +105,7 @@ struct navigationPage: View {
                     }
                 }
                 .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
-                .edgesIgnoringSafeArea(.bottom)
+                .ignoresSafeArea(edges: .vertical)
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
     }
@@ -178,6 +178,8 @@ struct ZoomingImage: View {
                     dragOffset = .zero
                     dragOffsetPredicted = .zero
                 }
+                .frame(height: UIScreen.main.bounds.height)
+                .ignoresSafeArea(edges: .vertical)
         }
     }
 }

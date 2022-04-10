@@ -30,33 +30,19 @@ struct Navigation: View {
     @State var fastErrorInput: String = ""
     @State var source: String = "" // 2068
     @State var destination: String = "" // 2115
-    @State var commonFriend: [UnweightedEdge] = []
-    @State var Vertex: [Point] = []
-    @State var paint: [String] = []
-    @Binding var maps: Dictionary<Int, mapContents>
-    @State var cityGraph = UnweightedGraph<Point>(vertices: [])
-    @State var sPoint: [String] = []
-    @State var s: [String] = []
-    @State var complete: Bool = false
     @StateObject var viewRouter: ViewRouter
-    @State var offsetValue: CGSize = CGSize.zero
-    @State var offsetSum: CGSize = CGSize.zero
-    @State var pos = 0
-    @State var scrollContentOffset: CGFloat = CGFloat.zero
-    @State var scrollContentOffsetSum: CGFloat = CGFloat(110)
     @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
     @State var show = false
     @ObservedObject var settings: UserDefaultsSettings
     @State var Cards: [fastCard] = [
         .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "Кафе"),
-        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.lightEnd, .lightStart), name: "Туалет"),
+        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.green, .black), name: "Туалет"),
         .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
         .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "Мед пункт"),
         .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
     ]
     @State var errorType: errorSignal = .nothing
     @State var fastErrorType: errorSignal = .nothing
-    @Binding var isBookmark: Bool
     @State var fastCab: String = ""
     @State var typeCard: String = ""
     @FocusState private var focusedField: Field?
@@ -64,7 +50,7 @@ struct Navigation: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            ScrollView(.vertical, showsIndicators: false) { // Для анимации []
+            ScrollView(.vertical, showsIndicators: false) {
                 ScrollViewReader { scrollViewReaderValue in
                     GeometryReader { g in
                         Tittle(settings: settings, text: "Навигация", name: "location.viewfinder")
@@ -99,7 +85,7 @@ struct Navigation: View {
                                 HStack {
                                     Spacer()
                                         
-                                    entryField(sourse: $source, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings, focusedField: _focusedField, indexToScroll: $indexToScroll)
+                                    entryField(sourse: $source, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings, focusedField: _focusedField)
                                         
                                     Spacer()
                                         
@@ -125,8 +111,7 @@ struct Navigation: View {
                                         
                                 }
                             )
-                            //.id(0)
-                            .padding(.bottom)
+                            .padding(.bottom, UIScreen.main.bounds.height*0.025)
                             
         //                    inputError(errorInput: $errorInput)
         //                        .frame(height: UIScreen.main.bounds.height / 4.5 / 3)
@@ -143,15 +128,13 @@ struct Navigation: View {
                                 .font(.system(size: UIScreen.main.bounds.height / 30))
                                 .fontWeight(.bold)
                         }
+                        .padding(.bottom, -5)
                             
                         ScrollView(.horizontal, showsIndicators: false) {
                             ScrollViewReader { value in
                                 HStack(spacing: -30) {
                                     ForEach(Cards.indices) { index in
                                         GeometryReader { gg in
-//                                            VStack {
-                                               
-                                                
                                                 FlipView(showBack: self.Cards[index].isFaceUp, settings: settings, geometry: gg, imageName: self.Cards[index].images, color: self.Cards[index].color, fastCab: $fastCab, typeCard: $typeCard, name: self.Cards[index].name, fastErrorInput: $fastErrorInput, fastErrorType: $fastErrorType, indexToScroll: $indexToScroll)
                                                     .focused($focusedField, equals: .fast)
                                                     .onTapGesture {
@@ -174,15 +157,13 @@ struct Navigation: View {
                                                         }
                                                     }
                                                     .rotation3DEffect(Angle(degrees: Double(gg.frame(in: .global).minX - 50) / -20), axis: (x: 0, y: 100.0, z: 0))
-                                                
-                                                
-//                                            }
                                         }
                                         .id(index)
                                         .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height / 4.5)
-                                        .padding(.bottom, 50)
+//                                        .padding(.bottom, 50)
                                         .padding(.horizontal)
                                     }
+                                    .frame(height: UIScreen.main.bounds.height/2.5, alignment: .center)
                                     .onChange(of: fastCab) { newValue in
                                         let errors = self.Nav.searchShortestWay(source: newValue, destinationList: self.Nav.searchDestinationPoint(type: typeCard), theme: self.settings.theme, selectedMaps: self.settings.selectedMaps)
                                         
@@ -296,7 +277,7 @@ struct Navigation: View {
                                 }
                             }
                         }
-                        .padding(.top, 5)
+                        .padding(.top, -5)
                             
                             //                    Spacer()
                             //
@@ -358,7 +339,6 @@ struct entryField: View {
     @ObservedObject var settings: UserDefaultsSettings
     @State var onTapFields: [Bool] = [false, false]
     @FocusState var focusedField: Field?
-    @Binding var indexToScroll: Int?
     
     var body: some View {
         VStack {
@@ -377,11 +357,10 @@ struct entryField: View {
                 .submitLabel(.next)
                 .modifier(
                     PlaceholderStyle(
-                        showPlaceHolder: !onTapFields[0], // sourse.isEmpty
+                        showPlaceHolder: !onTapFields[0],
                         placeholder: "Начальный кабинет",
                         center: true,
                         settings: settings
-//                        paddingValue: -labelSize(for: "Начальный кабинет").width / 2
                     )
                 )
                 .onChange(of: sourse) { newValue in
@@ -431,7 +410,6 @@ struct entryField: View {
                         placeholder: "Конечный кабинет",
                         center: true,
                         settings: settings
-//                        paddingValue: -labelSize(for: "Конечный кабинет").width / 2
                     )
                 )
                 .onChange(of: destination) { newValue in

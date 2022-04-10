@@ -58,7 +58,6 @@ struct PointRouting {
     @State public var Errors: FieldErrors
     private var isBookmark: Bool
     private var theme: Int
-//    private var selectedMaps: [String]
     
     init(nameOfFileVertex: String, nameOfFileEdges: String) {
         self.fileVertex = FileJSON(bundleFileName: nameOfFileVertex)
@@ -70,7 +69,6 @@ struct PointRouting {
         self.Errors = FieldErrors()
         self.isBookmark = false
         self.theme = 0
-//        self.selectedMaps = []
         
         self.setVertex()
         self.setEdges()
@@ -105,7 +103,6 @@ struct PointRouting {
             for x in dictionary.keys {
                 for y in dictionary[x]! {
                     Graph.addEdge(from: find(p: x), to: find(p: y))
-                    print("0")
                 }
             }
         }
@@ -365,8 +362,6 @@ struct PointRouting {
                 } else {
                         newPaint += ", \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
                 }
-                
-                print("\(find(p: sPoint[x+1]).name)")
             }
         }
         

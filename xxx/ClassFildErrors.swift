@@ -43,8 +43,6 @@ class FieldErrors {
         self.fastErrorType = error
     }
     
-    
-    
     public func getErrorInput() -> String {
         self.errorInput
     }

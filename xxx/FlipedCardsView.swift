@@ -75,7 +75,7 @@ struct FlipView: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
             .shadow(color: settings.theme == 0 ? Color.darkStart : Color.white, radius: 5, x: -5, y: -5)
             .shadow(color: settings.theme == 0 ? Color.darkEnd : Color.gray, radius: 5, x: 5, y: 5)
-            .padding(.vertical, 30)
+//            .padding(.vertical, 30)
             .overlay(
                 ZStack {
                     HStack {                        

@@ -20,12 +20,9 @@ class ViewRouter: ObservableObject {
 }
 
 struct ContentView: View {
-    @State var Nav: PointRouting = PointRouting(nameOfFileVertex: "Data/Vertex", nameOfFileEdges: "Data/Edges")
-    @State var maps: Dictionary<Int, mapContents> = Dictionary()
+    @State var Nav: PointRouting
     @StateObject var viewRouter: ViewRouter
     @ObservedObject var settings = UserDefaultsSettings()
-    @State var menu: Bool = true
-    @State var isBookmark: Bool = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -33,7 +30,7 @@ struct ContentView: View {
                 
             case .navigation:
                 Wall(settings: settings, page: .navigation)
-                Navigation(Nav: $Nav, geometry: geometry, maps: $maps, viewRouter: viewRouter, settings: settings, isBookmark: $isBookmark)
+                Navigation(Nav: $Nav, geometry: geometry, viewRouter: viewRouter, settings: settings)
 
             case .datalist:
                 Wall(settings: settings, page: .datalist)
@@ -67,7 +64,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(viewRouter: ViewRouter())
+        ContentView(Nav: PointRouting(nameOfFileVertex: "Data/Vertex", nameOfFileEdges: "Data/Edges"), viewRouter: ViewRouter())
     }
 }
 
