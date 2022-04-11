@@ -73,6 +73,8 @@ struct PointRouting {
         self.setVertex()
         self.setEdges()
         
+        self.createDir(dirName: "EditedMaps")
+        
         print("[+] Start Graph with loaded data")
     }
     
@@ -86,6 +88,8 @@ struct PointRouting {
     
     mutating public func clearMaps() {
         self.Maps = Dictionary()
+        
+        self.clearDocumentDirectory()
     }
     
     mutating private func setVertex() {
@@ -249,20 +253,20 @@ struct PointRouting {
         return "<circle class=\"st9\" cx=\"\(x1)\" cy=\"\(y1)\" r=\"6.4\"/>"
     }
     
-    func getImage (resource: String, linesCode: String) -> UIImage {
+    private func getImage (resource: String, linesCode: String) -> UIImage {
         let url = urlSVGWithLines(resource: resource, linesCode: linesCode)
         
         return SVGToUIImage(url: url)
     }
     
-    func SVGToUIImage (url: URL) -> UIImage {
+    private func SVGToUIImage (url: URL) -> UIImage {
         let mySVGImage: SVGKImage = SVGKImage(contentsOf: url)
         let image: UIImage = mySVGImage.uiImage
         
         return image
     }
     
-    func appendLinesToSVG (xmlString: String, linesCode: String) -> String { // $$$
+    private func appendLinesToSVG (xmlString: String, linesCode: String) -> String { // $$$
         var xml = xmlString.components(separatedBy: "\n")
         var Colors: String = ""
         
@@ -293,7 +297,7 @@ struct PointRouting {
         return xml.joined(separator: "\n")
     }
     
-    func getSVG (resource: String) -> String {
+    private func getSVG (resource: String) -> String {
         let url = URL(fileURLWithPath: Bundle.main.path(forResource: resource, ofType: "svg")!)
         
         if let urlContents = try? String(contentsOf: url) {
@@ -303,24 +307,18 @@ struct PointRouting {
         return String() // !!!
     }
     
-    func urlSVGWithLines (resource: String, linesCode: String) -> URL { // $$$
+    private func urlSVGWithLines (resource: String, linesCode: String) -> URL { // $$$
         let url = URL(fileURLWithPath: Bundle.main.path(forResource: resource, ofType: "svg")!)
         var contentsSVG = try? String(contentsOf: url)
         
         contentsSVG = appendLinesToSVG(xmlString: contentsSVG!, linesCode: linesCode)
         
-        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let toURL = dir!.appendingPathComponent(resource.split(separator: "/").map {String($0)}.last! + ".svg")
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("EditedMaps")
+        let toURL = dir.appendingPathComponent(resource.split(separator: "/").map {String($0)}.last! + ".svg")
         
         do {
             try contentsSVG!.write(to: toURL, atomically: false, encoding: .utf8)
         } catch {/* error handling here */}
-        
-        //            //delete
-        //            do {
-        //                try FileManager.default.removeItem(at: toURL)
-        //            }
-        //            catch {/* error handling here */}
         
         return toURL
     }
@@ -366,5 +364,35 @@ struct PointRouting {
         }
         
         return newPaintMass
+    }
+    
+    private func clearDocumentDirectory() {
+        let fileManager = FileManager.default
+        let tempFolderPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("EditedMaps")
+        
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: tempFolderPath, includingPropertiesForKeys: nil)
+            for file in fileURLs {
+                try fileManager.removeItem(at: file)
+            }
+        } catch {
+            print("Could not clear temp folder: \(error)")
+        }
+    }
+    
+    private func createDir(dirName: String) {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dataPath = documentsDirectory.appendingPathComponent(dirName)
+        
+        if !FileManager.default.fileExists(atPath: dataPath.path) {
+            do {
+                try FileManager.default.createDirectory(atPath: dataPath.path, withIntermediateDirectories: false, attributes: nil)
+                print("[+] EditedMaps in Documents")
+            } catch {
+                print("Error creating directory: \(error.localizedDescription)")
+            }
+        }
+        
+        print("[?] Edited Maps in -> " + FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(dirName).path)
     }
 }

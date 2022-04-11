@@ -57,7 +57,6 @@ struct navigationPage: View {
                             HStack {
                                 Button(action: {
                                     withAnimation {
-                                        clearSVG()
                                         Nav.clearMaps()
                                         image = UIImage()
                                         blurValue = 0
@@ -108,13 +107,6 @@ struct navigationPage: View {
                 .ignoresSafeArea(edges: .vertical)
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
-    }
-    
-    func clearSVG () { // Зачем?
-        for resource in Nav.getMaps().keys {
-            let url = URL(fileURLWithPath: Bundle.main.path(forResource: Nav.getMaps()[resource]!.name, ofType: "svg")!)
-            try? Nav.getMaps()[resource]!.mainContent.write(to: url, atomically: true, encoding: .utf8)
-        }
     }
 }
 

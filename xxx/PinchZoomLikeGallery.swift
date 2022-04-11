@@ -62,7 +62,6 @@ struct Zoom<Content: View>: UIViewRepresentable {
         init(hostingController: UIHostingController<Content>, parent: Zoom) {
             self.hostingController = hostingController
             self.parent = parent
-            
         }
         
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {

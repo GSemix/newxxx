@@ -375,7 +375,7 @@ struct entryField: View {
                     }
                 }
                 .textContentType(.dateTime)
-                .frame(height: 50)
+                .frame(height: UIScreen.main.bounds.height*0.05)
                 .multilineTextAlignment(.center)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10.0)
@@ -424,7 +424,7 @@ struct entryField: View {
                     }
                 }
                 .textContentType(.dateTime)
-                .frame(height: 50)
+                .frame(height: UIScreen.main.bounds.height*0.05)
                 .multilineTextAlignment(.center)
                 .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(errorType == .end || errorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
             

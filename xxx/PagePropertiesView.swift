@@ -39,12 +39,11 @@ struct Properties: View {
                     .listRowBackground(Color.clear)
                     .frame(width: UIScreen.main.bounds.width*0.8, height: UIScreen.main.bounds.height*0.1, alignment: .center)
                     
-                    
                     //Section2(settings: settings)
                     //Section1(settings: settings)
                     Section5(settings: settings)
                     Section3(settings: settings)
-                    Section4(settings: settings)
+//                    Section4(settings: settings)
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height/4)
@@ -185,11 +184,11 @@ struct Section5: View {
             })
             .pickerStyle(SegmentedPickerStyle())
             
-            Picker(selection: $previewIndexL, label: Text("Язык")) {
-                ForEach(0..<language.count) {
-                    Text(self.language[$0])
-                }
-            }
+//            Picker(selection: $previewIndexL, label: Text("Язык")) {
+//                ForEach(0..<language.count) {
+//                    Text(self.language[$0])
+//                }
+//            }
             
         }
         .listRowBackground(Color.gray.opacity(0.5))
