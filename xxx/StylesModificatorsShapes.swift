@@ -175,6 +175,7 @@ public struct PlaceholderStyle: ViewModifier {
                 Text(placeholder)
                     .foregroundColor(settings.theme == 0 ? Color.offWhite.opacity(0.7) : Color(#colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)))
                     .font(.body)
+                    .font(.system(size: UIScreen.main.bounds.width/25))
             }
             
             content
