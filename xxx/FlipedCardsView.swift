@@ -112,7 +112,7 @@ struct FlipView: View {
                             .modifier(
                                 PlaceholderStyle(
                                     showPlaceHolder: !onTapField,
-                                    placeholder: "Начальный кабинет",
+                                    placeholder: "Откуда?",
                                     center: true,
                                     settings: settings
                                 )

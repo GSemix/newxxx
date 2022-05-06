@@ -358,7 +358,7 @@ struct entryField: View {
                 .modifier(
                     PlaceholderStyle(
                         showPlaceHolder: !onTapFields[0],
-                        placeholder: "Начальный кабинет",
+                        placeholder: "Откуда?",
                         center: true,
                         settings: settings
                     )
@@ -407,7 +407,7 @@ struct entryField: View {
                 .modifier(
                     PlaceholderStyle(
                         showPlaceHolder: !onTapFields[1],
-                        placeholder: "Конечный кабинет",
+                        placeholder: "Куда?",
                         center: true,
                         settings: settings
                     )

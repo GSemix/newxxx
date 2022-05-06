@@ -23,8 +23,6 @@ struct header: View {
                 .background(BlurBG(settings: settings))
                 .cornerRadius(25, corners: [.bottomRight, .bottomLeft])
                 .edgesIgnoringSafeArea(.top)
-            
-//            Spacer()
         }
     }
 }

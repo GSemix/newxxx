@@ -345,7 +345,7 @@ struct PointRouting {
                     newPaintMass.append(find(p: sPoint[x+1]).housing + find(p: sPoint[x+1]).floor)
                     newPaint = "<polyline class=\"st8\" points=\"" + "\(find(p: sPoint[x+1]).x0) \(find(p: sPoint[x+1]).y0), \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
                 } else if find(p: sPoint[x]).floor != find(p: sPoint[x+1]).floor {
-                    newPaint += ", \(find(p: sPoint[x+1]).x0) \(find(p: sPoint[x+1]).y0) \"/>\n"
+                    newPaint += ", \(find(p: sPoint[x]).x0) \(find(p: sPoint[x]).y0) \"/>\n"
                     newPaintMass.append(newPaint)
                     
                     if find(p: sPoint[x]).floor > find(p: sPoint[x+1]).floor {

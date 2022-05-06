@@ -42,12 +42,13 @@ struct Wall: View {
                     .padding()
                 
             case .maps:
-                Image(systemName: "location")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
-                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
-                    .padding()
+//                Image(systemName: "location")
+//                    .resizable()
+//                    .aspectRatio(contentMode: .fit)
+//                    .foregroundColor(settings.theme == 0 ? .darkEnd : .purpleStart)
+//                    .opacity(settings.theme == 0 ? 0.3 : 0.1)
+//                    .padding()
+                Color.clear
                 
             case .news:
                 Image(systemName: "newspaper")

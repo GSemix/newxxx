@@ -21,16 +21,27 @@ struct navigationPage: View {
         ZStack(alignment: .top) {
                 ScrollView(.vertical, showsIndicators: false) {
                     ForEach (Array(Nav.getMaps().keys).sorted(by: {$0 < $1}), id: \.self) { map in
-                            piceOfMap(settings: settings, image: Nav.getMaps()[map]!.image)
-                                .onTapGesture(count: 1) {
-                                    image = Nav.getMaps()[map]!.image
-                                    withAnimation(.interactiveSpring()) {
-                                        showImageViewer = true
-                                    }
+                        piceOfMap(settings: settings, image: Nav.getMaps()[map]!.image)
+                            .onTapGesture(count: 1) {
+                                image = Nav.getMaps()[map]!.image
+                                withAnimation(.interactiveSpring()) {
+                                    showImageViewer = true
                                 }
+                            }
 
                         Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
-                                .padding(.vertical, 5)
+                            .padding(.vertical, 5)
+                        
+                        piceOfMap(settings: settings, image: Nav.getMaps()[map]!.image)
+                            .onTapGesture(count: 1) {
+                                image = Nav.getMaps()[map]!.image
+                                withAnimation(.interactiveSpring()) {
+                                    showImageViewer = true
+                                }
+                            }
+
+                        Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
+                            .padding(.vertical, 5)
                     }
                     
                     Spacer()
@@ -73,7 +84,7 @@ struct navigationPage: View {
                                         .padding(15)
                                         .clipShape(Capsule())
                                 }
-                                .frame(width: 50, height: 50)
+                                .frame(width: UIScreen.main.bounds.height*0.05, height: UIScreen.main.bounds.height*0.05)
                                 
                                 Spacer()
                                 
@@ -95,7 +106,7 @@ struct navigationPage: View {
                                         .frame(width: UIScreen.main.bounds.width * 0.05, height: UIScreen.main.bounds.width * 0.05)
                                         .foregroundColor(settings.theme == 0 ? .lightStart : .purpleStart)
                                 }
-                                .frame(width: 50, height: 50)
+                                .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.height*0.05)
                                 .toggleStyle(ImageToggle())
                             }
                             .padding(.horizontal, 30)
@@ -103,7 +114,7 @@ struct navigationPage: View {
                             .padding(.bottom, UIScreen.main.bounds.height*0.01)
                     }
                 }
-                .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
+                .animation(.interactiveSpring())
                 .ignoresSafeArea(edges: .vertical)
         }
         .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height, alignment: .center)
@@ -140,26 +151,26 @@ struct ZoomingImage: View {
                 }
                 .gesture(DragGesture()
                             .onChanged { value in
-                    if zoomScale == 1.0  && viewerShown {
-                        self.dragOffset = value.translation
-                        self.dragOffsetPredicted = value.predictedEndTranslation
-                    }
-                }
-                            .onEnded { value in
-                    if zoomScale == 1.0 && viewerShown {
-                        if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
-                            withAnimation(.spring()) {
-                                self.dragOffset = self.dragOffsetPredicted
+                                if zoomScale == 1.0  && viewerShown {
+                                    self.dragOffset = value.translation
+                                    self.dragOffsetPredicted = value.predictedEndTranslation
+                                }
                             }
-                            self.viewerShown = false
-                            
-                            return
-                        }
-                        withAnimation(.interactiveSpring()) {
-                            self.dragOffset = .zero
-                        }
-                    }
-                }
+                            .onEnded { value in
+                                if zoomScale == 1.0 && viewerShown {
+                                    if ((abs(self.dragOffset.height) + abs(self.dragOffset.width) > 570) || ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) || ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3) {
+                                        withAnimation(.spring()) {
+                                            self.dragOffset = self.dragOffsetPredicted
+                                        }
+                                        self.viewerShown = false
+                                        
+                                        return
+                                    }
+                                    withAnimation(.interactiveSpring()) {
+                                        self.dragOffset = .zero
+                                    }
+                                }
+                            }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onChange(of: self.dragOffset, perform: { newValue in
@@ -172,6 +183,7 @@ struct ZoomingImage: View {
                 }
                 .frame(height: UIScreen.main.bounds.height)
                 .ignoresSafeArea(edges: .vertical)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.3))
         }
     }
 }

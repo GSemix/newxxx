@@ -145,7 +145,7 @@ struct PinchToZoom: ViewModifier {
     @State var anchor: UnitPoint = .center
     @State var offset: CGSize = .zero
     @State var isPinching: Bool = false
-    var theme: Int
+    var theme: Int = 1
     
     func body(content: Content) -> some View {
         content
