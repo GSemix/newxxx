@@ -31,17 +31,6 @@ struct navigationPage: View {
 
                         Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
                             .padding(.vertical, 5)
-                        
-                        piceOfMap(settings: settings, image: Nav.getMaps()[map]!.image)
-                            .onTapGesture(count: 1) {
-                                image = Nav.getMaps()[map]!.image
-                                withAnimation(.interactiveSpring()) {
-                                    showImageViewer = true
-                                }
-                            }
-
-                        Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
-                            .padding(.vertical, 5)
                     }
                     
                     Spacer()
