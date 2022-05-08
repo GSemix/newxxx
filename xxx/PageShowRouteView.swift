@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+//import SVGKit // Test
+
 struct navigationPage: View {
     @Binding var Nav: PointRouting
     @State var image: UIImage = UIImage()
@@ -32,6 +34,11 @@ struct navigationPage: View {
                         Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
                             .padding(.vertical, 5)
                     }
+                    
+//                    Image(uiImage: SVGKImage(contentsOf: URL(fileURLWithPath: Bundle.main.path(forResource: "Maps/Г2", ofType: "svg")!)).uiImage)
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height*0.15)

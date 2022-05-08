@@ -35,11 +35,11 @@ struct Navigation: View {
     @State var show = false
     @ObservedObject var settings: UserDefaultsSettings
     @State var Cards: [fastCard] = [
-        .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "Кафе"),
-        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.green, .black), name: "Туалет"),
-        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "Вход"),
-        .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "Мед пункт"),
-        .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "Банкомат"),
+        .init(images: ["fork.knife"], color: LinearGradient(.offWhite, .gray), name: "кафе"),
+        .init(images: ["w.square.fill", "c.square.fill"], color: LinearGradient(.green, .black), name: "туалет"),
+        .init(images: ["rectangle.portrait.and.arrow.right.fill"], color: LinearGradient(.orange, .brown), name: "вход"),
+        .init(images: ["cross"], color: LinearGradient(.red, .red.opacity(0.2)), name: "мед пункт"),
+        .init(images: ["dollarsign.circle"], color: LinearGradient(.yellow, .gray), name: "банкомат"),
     ]
     @State var errorType: errorSignal = .nothing
     @State var fastErrorType: errorSignal = .nothing
@@ -88,10 +88,10 @@ struct Navigation: View {
                                     entryField(sourse: $source, destination: $destination, errorInput: $errorInput, errorType: $errorType, settings: settings, focusedField: _focusedField)
                                         
                                     Spacer()
-                                        
+                                    
                                     Button(action: {
                                         withAnimation {
-                                            let errors = self.Nav.mainRoute(source: source, destination: destination, theme: self.settings.theme, selectedMaps: self.settings.selectedMaps)
+                                            let errors = self.Nav.mainRoute(source: String(source.replacingOccurrences(of: " ", with: "&")).lowercased(), destination: String(destination.replacingOccurrences(of: " ", with: "&")).lowercased(), theme: self.settings.theme, selectedMaps: self.settings.selectedMaps)
                                             self.errorType = errors.errorType
                                             self.errorInput = errors.errorInput
                                             
@@ -165,7 +165,7 @@ struct Navigation: View {
                                     }
                                     .frame(height: UIScreen.main.bounds.height/2.5, alignment: .center)
                                     .onChange(of: fastCab) { newValue in
-                                        let errors = self.Nav.searchShortestWay(source: newValue, destinationList: self.Nav.searchDestinationPoint(type: typeCard), theme: self.settings.theme, selectedMaps: self.settings.selectedMaps)
+                                        let errors = self.Nav.searchShortestWay(source: String(newValue.replacingOccurrences(of: " ", with: "&")).lowercased(), destinationList: self.Nav.searchDestinationPoint(type: typeCard), theme: self.settings.theme, selectedMaps: self.settings.selectedMaps)
                                         
                                         withAnimation {
                                             self.fastErrorType = errors.fastErrorType
@@ -220,16 +220,22 @@ struct Navigation: View {
                                             Spacer()
                                                 
                                             ForEach(self.Cards.indices) { i in
-                                                if self.settings.selectedMaps[index].split(separator: " ")[0].contains(self.Cards[i].name) {
-                                                    Text(self.Cards[i].name)
+                                                if self.settings.selectedMaps[index].split(separator: " ")[0].contains(self.Cards[i].name.lowercased()) {
+                                                    Text(self.Cards[i].name.capitalized)
                                                         .font(.system(size: UIScreen.main.bounds.height / 50))
                                                         .fontWeight(.semibold)
                                                 }
                                                 
                                                 if i == self.Cards.count - 1 && !self.settings.selectedMaps[index].split(separator: " ")[0].contains("_") {
-                                                    Text(self.settings.selectedMaps[index].split(separator: " ")[0])
-                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
-                                                        .fontWeight(.semibold)
+                                                    if self.settings.selectedMaps[index].split(separator: " ")[0].contains("&") {
+                                                        Text(String(self.settings.selectedMaps[index].split(separator: " ")[0].replacingOccurrences(of: "&", with: " ")).capitalized)
+                                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                            .fontWeight(.semibold)
+                                                    } else {
+                                                        Text(self.settings.selectedMaps[index].split(separator: " ")[0].capitalized)
+                                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                            .fontWeight(.semibold)
+                                                    }
                                                 }
                                             }
                                                 
@@ -243,16 +249,22 @@ struct Navigation: View {
                                             Spacer()
                                                 
                                             ForEach(self.Cards.indices) { i in
-                                                if self.settings.selectedMaps[index].split(separator: " ")[1].contains(self.Cards[i].name) {
-                                                    Text(self.Cards[i].name)
+                                                if self.settings.selectedMaps[index].split(separator: " ")[1].contains(self.Cards[i].name.lowercased()) {
+                                                    Text(self.Cards[i].name.capitalized)
                                                         .font(.system(size: UIScreen.main.bounds.height / 50))
                                                         .fontWeight(.semibold)
                                                 }
                                                 
                                                 if i == self.Cards.count - 1 && !self.settings.selectedMaps[index].split(separator: " ")[1].contains("_") {
-                                                    Text(self.settings.selectedMaps[index].split(separator: " ")[1])
-                                                        .font(.system(size: UIScreen.main.bounds.height / 50))
-                                                        .fontWeight(.semibold)
+                                                    if self.settings.selectedMaps[index].split(separator: " ")[1].contains("&") {
+                                                        Text(String(self.settings.selectedMaps[index].split(separator: " ")[1].replacingOccurrences(of: "&", with: " ")).capitalized)
+                                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                            .fontWeight(.semibold)
+                                                    } else {
+                                                        Text(self.settings.selectedMaps[index].split(separator: " ")[1].capitalized)
+                                                            .font(.system(size: UIScreen.main.bounds.height / 50))
+                                                            .fontWeight(.semibold)
+                                                    }
                                                 }
                                             }
 
