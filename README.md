@@ -18,3 +18,8 @@
 >>>>>>>>>>>
 
 Исправить поднятие снизу контента при появлении клавиатуры в Properties
+
+//                    Image(uiImage: SVGKImage(contentsOf: URL(fileURLWithPath: Bundle.main.path(forResource: "Maps/Г2", ofType: "svg")!)).uiImage)
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)

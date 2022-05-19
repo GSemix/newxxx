@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-//import SVGKit // Test
-
 struct navigationPage: View {
     @Binding var Nav: PointRouting
     @State var image: UIImage = UIImage()
@@ -18,6 +16,8 @@ struct navigationPage: View {
     @State var showImageViewer: Bool = false
     @State var blurValue: Double = 0
     @State var zoomScale: Double = 1.0
+    @Binding var source: String
+    @Binding var destination: String
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -34,11 +34,6 @@ struct navigationPage: View {
                         Explanation(settings: settings, text: Nav.getMaps()[map]!.text)
                             .padding(.vertical, 5)
                     }
-                    
-//                    Image(uiImage: SVGKImage(contentsOf: URL(fileURLWithPath: Bundle.main.path(forResource: "Maps/Г2", ofType: "svg")!)).uiImage)
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: UIScreen.main.bounds.width*0.99, height: UIScreen.main.bounds.height*0.25)
                     
                     Spacer()
                         .frame(height: UIScreen.main.bounds.height*0.15)
@@ -69,6 +64,8 @@ struct navigationPage: View {
                                         blurValue = 0
                                         showImageViewer = false
                                         Nav.setIsBookmark(isBookmark: false)
+                                        source = ""
+                                        destination = ""
                                         viewRouter.currentPage = .navigation
                                     }
                                 }) {

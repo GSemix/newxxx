@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftGraph
 import SVGKit
 
-struct Point: Decodable, Encodable, Equatable {
+struct Point: Decodable, Encodable, Equatable, Hashable {
     var name: String
     var housing: String
     var floor: String
@@ -76,6 +76,10 @@ struct PointRouting {
         self.createDir(dirName: "EditedMaps")
         
         print("[+] Start Graph with loaded data")
+    }
+    
+    public func getVertex() -> [Point] {
+        return self.Vertex
     }
     
     public func getIsBookmark() -> Bool {
@@ -183,21 +187,24 @@ struct PointRouting {
     mutating public func searchShortestWay(source: String, destinationList: [String], theme: Int, selectedMaps: [String]) -> FieldErrors {
         var destinationName: String = ""
         self.theme = theme
+        print(source)
+        print(destinationList)
         
         if destinationList.isEmpty {
             print("Неизвестный тип")
         } else {
-            if find(p: source) == Point() {
+            if find(p: source) == Point() || (destinationList.contains(source) && destinationList.count == 1) {
                 self.Errors.setFastErrorType(error: .all)
                 self.Errors.setFastErrorInput(text: "Кабинет \(source) не найден")
             } else {
                 var bestCommonFriend: [UnweightedEdge] = []
                 destinationName = ""
 
-                for x in destinationList {
+                for x in destinationList.filter({ $0 != source }) {
+                    print(">> \(x)")
                     let commonFriend: [UnweightedEdge] = self.Graph.bfs(from: find(p: source), to: find(p: x))
                     
-                    if x == destinationList[0] {
+                    if x == destinationList.filter({ $0 != source })[0] {
                         bestCommonFriend = commonFriend
                         destinationName = x
                     } else {
@@ -239,7 +246,7 @@ struct PointRouting {
         return listDestinattionPoint
     }
     
-    private func find (p: String) -> Point {
+    public func find (p: String) -> Point {
         for x in Vertex {
             if x == p {
                 return x
@@ -267,40 +274,40 @@ struct PointRouting {
     }
     
     private func appendLinesToSVG (xmlString: String, linesCode: String) -> String { // $$$
-        var xml = xmlString.components(separatedBy: "\n")
+        var xml = xmlString
         var Colors: String = ""
         
         if self.theme == 0 {
             Colors = """
+            <style type="text/css">
             .st0{fill:#e1e1eb;}
             .st1{fill:#e1e1eb;}
             .st8{fill:none;stroke:#3CA0F0;stroke-width:10;stroke-miterlimit:10;}
             .st9{fill:#3CA0F0;}
+            </style>
         """
         } else if self.theme == 1 {
             Colors = """
+            <style type="text/css">
             .st0{fill:#323c41;}
             .st1{fill:#323c41;}
             .st8{fill:none;stroke:#6300EE;stroke-width:10;stroke-miterlimit:10;}
             .st9{fill:#6300EE;}
+            </style>
         """
         }
         
-        xml.insert("""
-        \(Colors)
-        """, at: 5)
+        xml = xml.replacingOccurrences(of: "<!-- STYLES -->", with: Colors)
+        xml = xml.replacingOccurrences(of: "<!-- LINES -->", with: linesCode)
         
-        xml.insert("""
-        \(linesCode)
-        """, at: xml.count - 2)
-        
-        return xml.joined(separator: "\n")
+        return xml
     }
     
     private func getSVG (resource: String) -> String {
         let url = URL(fileURLWithPath: Bundle.main.path(forResource: resource, ofType: "svg")!)
         
         if let urlContents = try? String(contentsOf: url) {
+        
             return urlContents
         }
         
@@ -318,7 +325,9 @@ struct PointRouting {
         
         do {
             try contentsSVG!.write(to: toURL, atomically: false, encoding: .utf8)
-        } catch {/* error handling here */}
+        } catch {
+            print("Error in function -> PointRouting.urlSVGWithLines")
+        }
         
         return toURL
     }
@@ -341,7 +350,7 @@ struct PointRouting {
                 } else if find(p: sPoint[x]).housing != find(p: sPoint[x+1]).housing {
                     newPaint += ", \(find(p: sPoint[x]).x0) \(find(p: sPoint[x]).y0) \"/>\n"
                     newPaintMass.append(newPaint)
-                    newPaintMass.append("Пройдите по переходу в корпус \(find(p: sPoint[x+1]).housing)")
+                    newPaintMass.append("Пройдите в корпус \(find(p: sPoint[x+1]).housing.uppercased())")
                     newPaintMass.append(find(p: sPoint[x+1]).housing + find(p: sPoint[x+1]).floor)
                     newPaint = "<polyline class=\"st8\" points=\"" + "\(find(p: sPoint[x+1]).x0) \(find(p: sPoint[x+1]).y0), \(find(p: sPoint[x+1]).x) \(find(p: sPoint[x+1]).y)"
                 } else if find(p: sPoint[x]).floor != find(p: sPoint[x+1]).floor {
@@ -376,7 +385,7 @@ struct PointRouting {
                 try fileManager.removeItem(at: file)
             }
         } catch {
-            print("Could not clear temp folder: \(error)")
+            print("Error in function -> PointRouting.clearDocumentDirectory -> Could not clear temp folder: \(error)")
         }
     }
     

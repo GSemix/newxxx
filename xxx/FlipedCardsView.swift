@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SVGKit
+//import SVGKit
 
 struct CardFlip: ViewModifier {
     var isFaceUp: Bool
@@ -60,14 +60,16 @@ struct FlipView: View {
     var geometry: GeometryProxy
     var imageName: [String]
     var color: LinearGradient
-    @State var text: String = ""
     @Binding var fastCab: String
     @Binding var typeCard: String
     var name: String
     @State var onTapField: Bool = false
     @Binding var fastErrorInput: String
     @Binding var fastErrorType: errorSignal
-    @Binding var indexToScroll: Int?
+    @Binding var searchText: String
+    @Binding var searchHelp: Bool
+    @Binding var field: FieldType
+    @Binding var fastButton: Bool
     
     var body: some View {
         RoundedRectangle(cornerRadius: 25)
@@ -97,27 +99,18 @@ struct FlipView: View {
                     HStack {
                         Spacer()
                         
-                        TextField("", text: $text, onEditingChanged: { value in
-                            if value {
-                                onTapField = true
-                                indexToScroll = 1
-                            } else {
-                                if text.isEmpty {
-                                    onTapField = false
-                                }
-                                
-                                indexToScroll = nil
-                            }
-                        })
+//                        TextField("", text: $text, onEditingChanged: { value in
+                        TextField("", text: $fastCab)
                             .modifier(
                                 PlaceholderStyle(
-                                    showPlaceHolder: !onTapField,
+//                                    showPlaceHolder: !onTapField,
+                                    showPlaceHolder: fastCab.isEmpty,
                                     placeholder: "Откуда?",
                                     center: true,
                                     settings: settings
                                 )
                             )
-                            .onChange(of: text) { newValue in
+                            .onChange(of: fastCab) { newValue in
                                 withAnimation {
                                     fastErrorInput = ""
                                     
@@ -127,18 +120,25 @@ struct FlipView: View {
                                 }
                             }
                             .textContentType(.dateTime)
-                            .frame(height: 50)
+                            .frame(height: UIScreen.main.bounds.height*0.05)
                             .multilineTextAlignment(.center)
                             .overlay(RoundedRectangle(cornerRadius: 10.0).strokeBorder(fastErrorType == .all ? Color.red : Color.clear, style: StrokeStyle(lineWidth: 3.0)))
+                            .onTapGesture(perform: {
+                                withAnimation {                                    
+                                    self.field = .fast
+                                    self.typeCard = self.name
+                                    self.searchHelp = true
+                                }
+                            })
                         
                         Spacer()
                         
                         Button(action: {
-                            self.fastCab = self.text
-                            self.typeCard = name
+                            self.fastButton = true
+                            self.typeCard = self.name
                             
                             withAnimation {
-                                if text.isEmpty {
+                                if fastCab.isEmpty {
                                     fastErrorType = .all
                                 }
                             }
@@ -157,7 +157,6 @@ struct FlipView: View {
             )
             .onChange(of: flipped) { newValue in
                 if !newValue {
-                    self.text = ""
                     self.onTapField = false
                     self.fastErrorType = .nothing
                     self.fastErrorInput = ""

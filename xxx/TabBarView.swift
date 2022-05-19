@@ -66,8 +66,12 @@ struct tabBarIcons: View {
                         TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .navigation, width: geometry.size.width, height: geometry.size.height, systemIconName: "location", tabName: "Навигация")
                             .padding(.top, geometry.size.height/16/8)
                         
-                        
                         Spacer()
+                        
+//                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .search, width: geometry.size.width, height: geometry.size.height, systemIconName: "magnifyingglass", tabName: "Поиск")
+//                            .padding(.top, geometry.size.height/16/8)
+//
+//                        Spacer()
                         
 //                        TabBarIconNew(settings: settings, viewRouter: viewRouter, assignedPage: .datalist, width: geometry.size.width, height: geometry.size.height, systemIconName: "list.bullet", tabName: "Расписание")
 //                            .padding(.top, geometry.size.height/16/8)

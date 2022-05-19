@@ -134,6 +134,20 @@ struct GrowingButton: ButtonStyle {
     }
 }
 
+struct GrowingButtonColor: ButtonStyle {
+    @ObservedObject var settings: UserDefaultsSettings
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(Color.offWhite)
+            .cornerRadius(5)
+            .foregroundColor(.darkEnd)
+            .opacity(configuration.isPressed ? 0.3 : 1)
+            .scaleEffect(configuration.isPressed ? 0.9 : 1)
+            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
 struct GrowingButtonWays: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -180,6 +194,37 @@ public struct PlaceholderStyle: ViewModifier {
             
             content
                 .foregroundColor(settings.theme == 0 ? Color.offWhite : Color.darkStart)
+                .font(.system(size: UIScreen.main.bounds.width/20, weight: .heavy, design: .default))
+        }
+    }
+}
+
+public struct SearchPlaceholderStyle: ViewModifier {
+    var showPlaceHolder: Bool
+    var placeholder: String
+    var center: Bool
+    
+    public func body(content: Content) -> some View {
+        ZStack(alignment: center ? .center : .leading) {
+            Color.offWhite
+            
+            if showPlaceHolder {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: UIScreen.main.bounds.width*0.05, height: UIScreen.main.bounds.width*0.05)
+                        .foregroundColor(Color(#colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)))
+                    
+                    Text(placeholder)
+                        .foregroundColor(Color(#colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)))
+                        .font(.body)
+                        .font(.system(size: UIScreen.main.bounds.width/25))
+                }
+            }
+            
+            content
+                .foregroundColor(Color.darkStart)
                 .font(.system(size: UIScreen.main.bounds.width/20, weight: .heavy, design: .default))
         }
     }

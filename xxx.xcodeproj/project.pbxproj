@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		932FB1622831871B00386837 /* PageSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932FB1612831871B00386837 /* PageSearchView.swift */; };
 		933D8FCF27FF14470077AE58 /* ClassFildErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */; };
 		9347A3FA27E8BC1300A37628 /* PinchZoomLikeInstagram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */; };
 		9347A3FE27E8BD0100A37628 /* StylesModificatorsShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9347A3FD27E8BD0100A37628 /* StylesModificatorsShapes.swift */; };
@@ -25,6 +26,7 @@
 		9382D7C827DA391B001E5F5A /* UserDefaultsSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */; };
 		93C3F7E327FCB69F00FBBECA /* ClassFileJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93C3F7E227FCB69F00FBBECA /* ClassFileJSON.swift */; };
 		93C3F7E527FCB6FB00FBBECA /* StructPointRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93C3F7E427FCB6FB00FBBECA /* StructPointRouting.swift */; };
+		93F0637028341E2A006076B5 /* PopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F0636F28341E2A006076B5 /* PopupView.swift */; };
 		93F5420C279C5750000B175D /* xxxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420B279C5750000B175D /* xxxApp.swift */; };
 		93F5420E279C5750000B175D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F5420D279C5750000B175D /* ContentView.swift */; };
 		93F54210279C5751000B175D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93F5420F279C5751000B175D /* Assets.xcassets */; };
@@ -37,6 +39,7 @@
 /* Begin PBXFileReference section */
 		45BB804E4F5A49F158A0DB10 /* Pods-xxx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-xxx.release.xcconfig"; path = "Target Support Files/Pods-xxx/Pods-xxx.release.xcconfig"; sourceTree = "<group>"; };
 		63CE7D3BFBB38F732FA1877B /* Pods_xxx.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_xxx.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		932FB1612831871B00386837 /* PageSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSearchView.swift; sourceTree = "<group>"; };
 		933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassFildErrors.swift; sourceTree = "<group>"; };
 		9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinchZoomLikeInstagram.swift; sourceTree = "<group>"; };
 		9347A3FD27E8BD0100A37628 /* StylesModificatorsShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StylesModificatorsShapes.swift; sourceTree = "<group>"; };
@@ -55,6 +58,7 @@
 		9382D7C727DA391B001E5F5A /* UserDefaultsSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsSettings.swift; sourceTree = "<group>"; };
 		93C3F7E227FCB69F00FBBECA /* ClassFileJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassFileJSON.swift; sourceTree = "<group>"; };
 		93C3F7E427FCB6FB00FBBECA /* StructPointRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructPointRouting.swift; sourceTree = "<group>"; };
+		93F0636F28341E2A006076B5 /* PopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupView.swift; sourceTree = "<group>"; };
 		93F54208279C5750000B175D /* xxx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = xxx.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F5420B279C5750000B175D /* xxxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = xxxApp.swift; sourceTree = "<group>"; };
 		93F5420D279C5750000B175D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -113,6 +117,7 @@
 				93C3F7E427FCB6FB00FBBECA /* StructPointRouting.swift */,
 				933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */,
 				9347A3FD27E8BD0100A37628 /* StylesModificatorsShapes.swift */,
+				93F0636F28341E2A006076B5 /* PopupView.swift */,
 				9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */,
 				9347A40127E8BDD800A37628 /* PinchZoomLikeGallery.swift */,
 				9347A40B27E8BFCC00A37628 /* AdvertView.swift */,
@@ -122,6 +127,7 @@
 				9347A40927E8BF6800A37628 /* WallView.swift */,
 				9347A41327E8C14800A37628 /* PageNavigationView.swift */,
 				9347A40F27E8C08700A37628 /* PageShowRouteView.swift */,
+				932FB1612831871B00386837 /* PageSearchView.swift */,
 				9347A40327E8BE1600A37628 /* PagePropertiesView.swift */,
 				9347A41127E8C10C00A37628 /* PageNewsView.swift */,
 				9347A40D27E8C02F00A37628 /* PageDataListView.swift */,
@@ -282,6 +288,8 @@
 				9347A3FA27E8BC1300A37628 /* PinchZoomLikeInstagram.swift in Sources */,
 				93C3F7E527FCB6FB00FBBECA /* StructPointRouting.swift in Sources */,
 				9347A41427E8C14800A37628 /* PageNavigationView.swift in Sources */,
+				93F0637028341E2A006076B5 /* PopupView.swift in Sources */,
+				932FB1622831871B00386837 /* PageSearchView.swift in Sources */,
 				9347A40827E8BF3E00A37628 /* FlipedCardsView.swift in Sources */,
 				9347A3FE27E8BD0100A37628 /* StylesModificatorsShapes.swift in Sources */,
 				9347A40C27E8BFCC00A37628 /* AdvertView.swift in Sources */,

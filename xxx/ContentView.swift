@@ -23,6 +23,9 @@ struct ContentView: View {
     @State var Nav: PointRouting
     @StateObject var viewRouter: ViewRouter
     @ObservedObject var settings = UserDefaultsSettings()
+    @State var source: String = "" // 2068
+    @State var destination: String = "" // 2115
+    @State var isHideTabBarAndBlurWall: Bool = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -30,7 +33,8 @@ struct ContentView: View {
                 
             case .navigation:
                 Wall(settings: settings, page: .navigation)
-                Navigation(Nav: $Nav, geometry: geometry, viewRouter: viewRouter, settings: settings)
+                    .blur(radius: self.isHideTabBarAndBlurWall ? 3 : 0)
+                Navigation(Nav: $Nav, geometry: geometry, source: $source, destination: $destination, viewRouter: viewRouter, settings: settings, isHideTabBarAndBlurWall: $isHideTabBarAndBlurWall)
 
             case .datalist:
                 Wall(settings: settings, page: .datalist)
@@ -41,7 +45,7 @@ struct ContentView: View {
                 
             case .maps:
                 Wall(settings: settings, page: .maps)
-                navigationPage(Nav: $Nav, viewRouter: viewRouter, bookmark: Nav.getIsBookmark(), settings: settings)
+                navigationPage(Nav: $Nav, viewRouter: viewRouter, bookmark: Nav.getIsBookmark(), settings: settings, source: $source, destination: $destination)
                     .transition(.scale)
                 
             case .news:
@@ -50,6 +54,7 @@ struct ContentView: View {
             }
             
             tabBarIcons(settings: settings, geometry: geometry, viewRouter: viewRouter)
+                .offset(y: self.isHideTabBarAndBlurWall ? UIScreen.main.bounds.height*0.3 : 0)
         }
         .preferredColorScheme(settings.theme == 0 ? .dark : .light)
         .ignoresSafeArea(.keyboard, edges: .bottom)
