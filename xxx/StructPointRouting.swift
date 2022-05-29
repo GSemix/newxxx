@@ -187,8 +187,6 @@ struct PointRouting {
     mutating public func searchShortestWay(source: String, destinationList: [String], theme: Int, selectedMaps: [String]) -> FieldErrors {
         var destinationName: String = ""
         self.theme = theme
-        print(source)
-        print(destinationList)
         
         if destinationList.isEmpty {
             print("Неизвестный тип")

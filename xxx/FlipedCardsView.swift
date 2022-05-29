@@ -70,6 +70,7 @@ struct FlipView: View {
     @Binding var searchHelp: Bool
     @Binding var field: FieldType
     @Binding var fastButton: Bool
+    @Binding var searchTittle: String
     
     var body: some View {
         RoundedRectangle(cornerRadius: 25)
@@ -128,6 +129,7 @@ struct FlipView: View {
                                     self.field = .fast
                                     self.typeCard = self.name
                                     self.searchHelp = true
+                                    self.searchTittle = "Откуда?"
                                 }
                             })
                         

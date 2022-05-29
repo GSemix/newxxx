@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9326CF9D28439F86003C76DA /* ClassKeyboardHeightHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9326CF9C28439F86003C76DA /* ClassKeyboardHeightHelper.swift */; };
+		9326CF9F2843AFCC003C76DA /* EntryFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9326CF9E2843AFCC003C76DA /* EntryFieldView.swift */; };
+		9326CFA12843B034003C76DA /* TextErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9326CFA02843B034003C76DA /* TextErrorView.swift */; };
+		9326CFA32843B08B003C76DA /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9326CFA22843B08B003C76DA /* LoadingView.swift */; };
 		932FB1622831871B00386837 /* PageSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932FB1612831871B00386837 /* PageSearchView.swift */; };
 		933D8FCF27FF14470077AE58 /* ClassFildErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */; };
 		9347A3FA27E8BC1300A37628 /* PinchZoomLikeInstagram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */; };
@@ -39,6 +43,10 @@
 /* Begin PBXFileReference section */
 		45BB804E4F5A49F158A0DB10 /* Pods-xxx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-xxx.release.xcconfig"; path = "Target Support Files/Pods-xxx/Pods-xxx.release.xcconfig"; sourceTree = "<group>"; };
 		63CE7D3BFBB38F732FA1877B /* Pods_xxx.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_xxx.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9326CF9C28439F86003C76DA /* ClassKeyboardHeightHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassKeyboardHeightHelper.swift; sourceTree = "<group>"; };
+		9326CF9E2843AFCC003C76DA /* EntryFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryFieldView.swift; sourceTree = "<group>"; };
+		9326CFA02843B034003C76DA /* TextErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextErrorView.swift; sourceTree = "<group>"; };
+		9326CFA22843B08B003C76DA /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		932FB1612831871B00386837 /* PageSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSearchView.swift; sourceTree = "<group>"; };
 		933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassFildErrors.swift; sourceTree = "<group>"; };
 		9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinchZoomLikeInstagram.swift; sourceTree = "<group>"; };
@@ -114,18 +122,22 @@
 				93F54219279C577C000B175D /* Maps */,
 				9347A41727E8C26100A37628 /* Extensions.swift */,
 				93C3F7E227FCB69F00FBBECA /* ClassFileJSON.swift */,
-				93C3F7E427FCB6FB00FBBECA /* StructPointRouting.swift */,
 				933D8FCE27FF14470077AE58 /* ClassFildErrors.swift */,
+				9326CF9C28439F86003C76DA /* ClassKeyboardHeightHelper.swift */,
+				93C3F7E427FCB6FB00FBBECA /* StructPointRouting.swift */,
 				9347A3FD27E8BD0100A37628 /* StylesModificatorsShapes.swift */,
-				93F0636F28341E2A006076B5 /* PopupView.swift */,
 				9347A3F927E8BC1300A37628 /* PinchZoomLikeInstagram.swift */,
 				9347A40127E8BDD800A37628 /* PinchZoomLikeGallery.swift */,
+				9326CFA22843B08B003C76DA /* LoadingView.swift */,
+				93F0636F28341E2A006076B5 /* PopupView.swift */,
 				9347A40B27E8BFCC00A37628 /* AdvertView.swift */,
 				9347A40727E8BF3E00A37628 /* FlipedCardsView.swift */,
 				9347A40527E8BEA700A37628 /* HeadersView.swift */,
 				9347A3FF27E8BD6500A37628 /* TabBarView.swift */,
 				9347A40927E8BF6800A37628 /* WallView.swift */,
 				9347A41327E8C14800A37628 /* PageNavigationView.swift */,
+				9326CF9E2843AFCC003C76DA /* EntryFieldView.swift */,
+				9326CFA02843B034003C76DA /* TextErrorView.swift */,
 				9347A40F27E8C08700A37628 /* PageShowRouteView.swift */,
 				932FB1612831871B00386837 /* PageSearchView.swift */,
 				9347A40327E8BE1600A37628 /* PagePropertiesView.swift */,
@@ -282,10 +294,14 @@
 				9347A40A27E8BF6800A37628 /* WallView.swift in Sources */,
 				9347A41027E8C08800A37628 /* PageShowRouteView.swift in Sources */,
 				9347A41227E8C10C00A37628 /* PageNewsView.swift in Sources */,
+				9326CFA12843B034003C76DA /* TextErrorView.swift in Sources */,
 				9382D7C827DA391B001E5F5A /* UserDefaultsSettings.swift in Sources */,
 				933D8FCF27FF14470077AE58 /* ClassFildErrors.swift in Sources */,
 				9347A40227E8BDD800A37628 /* PinchZoomLikeGallery.swift in Sources */,
+				9326CF9F2843AFCC003C76DA /* EntryFieldView.swift in Sources */,
 				9347A3FA27E8BC1300A37628 /* PinchZoomLikeInstagram.swift in Sources */,
+				9326CFA32843B08B003C76DA /* LoadingView.swift in Sources */,
+				9326CF9D28439F86003C76DA /* ClassKeyboardHeightHelper.swift in Sources */,
 				93C3F7E527FCB6FB00FBBECA /* StructPointRouting.swift in Sources */,
 				9347A41427E8C14800A37628 /* PageNavigationView.swift in Sources */,
 				93F0637028341E2A006076B5 /* PopupView.swift in Sources */,

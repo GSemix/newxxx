@@ -12,6 +12,7 @@ enum Field1 {
 }
 
 struct Search2: View {
+    var tittle: String
     @Binding var searchText: String
     @Binding var searchHelp: Bool
     @Binding var Nav: PointRouting
@@ -23,6 +24,7 @@ struct Search2: View {
     @State var offsetScrollContent: CGFloat = .zero
     @State var offsetSearch: CGFloat = .zero
     @State var onTapFieldForButtonRemoveText: Bool = true
+    @StateObject var keyboardHeightHelper = KeyboardHeightHelper()
     var searchResults: [Point] {
         if searchText.isEmpty {
             return []
@@ -45,7 +47,7 @@ struct Search2: View {
                                 ScrollView(.vertical, showsIndicators: false) {
                                     VStack {
                                         Spacer()
-                                            .frame(height: geometry.size.height*0.1)
+                                            .frame(height: geometry.size.height*0.15)
                                         
                                         ForEach(searchResults, id: \.self) { result in
                                             if !result.name.contains("_") {
@@ -73,20 +75,28 @@ struct Search2: View {
                                                 }
                                                 .buttonStyle(GrowingButtonColor(settings: settings))
                                                 .padding(.horizontal, UIScreen.main.bounds.width*0.1)
-                                                .padding(.vertical, UIScreen.main.bounds.height*0.005)
+                                                .padding(.vertical, UIScreen.main.bounds.height*0.0005)
                                             }
                                             
                                         }
                                 
                                         Spacer()
-                                            .frame(height: self.offsetScrollContent)
+                                            .frame(height: self.keyboardHeightHelper.keyboardHeight)
                                     }
                                     .padding(.horizontal, geometry.size.width*0.025)
                                     .padding(.top, geometry.size.height*0.01)
-                                    .padding(.bottom, UIScreen.main.bounds.height*0.1)
+                                    .padding(.bottom, UIScreen.main.bounds.height*0.11)
                                 }
                                 
+                                
                                 VStack {
+                                    VStack {
+                                    Text(tittle)
+                                        .font(.system(size: UIScreen.main.bounds.height / 50))
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(settings.theme == 0 ? Color.lightStart : Color.purpleEnd)
+                                        .frame(alignment: .center)
+                                    
                                     HStack {
                                         TextField("", text: $searchText, onEditingChanged: { value in
                                             if value {
@@ -150,6 +160,7 @@ struct Search2: View {
                                         
                                         Spacer()
                                     }
+                                }
                                     .padding()
                                     .background(
                                         ZStack {
